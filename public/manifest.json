@@ -1,0 +1,23 @@
+{
+  "name": "Scroll Stopper",
+  "description": "React Chrome Extension that gets you to stop scrolling instagram and youtube shorts",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Scroll Stopper"
+  },
+  "permissions":[
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions":[
+    "*://*.instagram.com/*",
+    "*://*.youtube.com/shorts/*",
+    "*://*.tiktok.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+} 
