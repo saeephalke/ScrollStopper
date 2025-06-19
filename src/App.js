@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import { TextInputComponent } from 'react-native';
 
 function App() {
   return (
@@ -26,9 +27,21 @@ function App() {
 
             <input type="checkbox" id="todo3"/>
             <label htmlFor="todo3"> Go Draw Something</label><br/> <br/>
-
             <button>Submit</button>
           </form></p></div>
+          <br/><br/>
+
+          <div class="card">
+            <h3>Add something new</h3>
+            <p>
+            <form>
+              <input type="text" id="newtask" placeholder="Add New Task"/>
+              <label htmlFor="newtask"></label>
+              <br/><br/>
+              <button>Submit</button>
+            </form></p>
+          </div>
+        <br/><br/>
       </main>
     </div>
   );
