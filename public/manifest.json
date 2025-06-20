@@ -10,13 +10,25 @@
   "permissions":[
     "tabs",
     "storage",
-    "scripting"
+    "scripting",
+    "webNavigation"
   ],
-  "host_permissions":[
-    "*://*.instagram.com/*",
-    "*://*.youtube.com/shorts/*",
-    "*://*.tiktok.com/*"
+  "host_permissions": [
+    "https://www.instagram.com/*",
+    "https://www.youtube.com/shorts/*",
+    "https://www.tiktok.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://www.youtube.com/shorts/*",
+        "https://www.tiktok.com/*"
+      ],
+      "js": ["content.js"]
+    }
   ],
   "background": {
+    "service_worker": "background.js"
   }
 } 
