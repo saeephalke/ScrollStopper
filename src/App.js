@@ -1,7 +1,42 @@
+import { useEffect, useState } from 'react';
 import './App.css';
 
-
 function App() {
+
+  const [userID, setUserID] = useState("");
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    /* chrome.storage.local.get(['scrollStopperUserID'], async (result) => {
+      let storedUserID = result.scrollStopperUserID;
+    if(!storedUserID){
+      storedUserID = crypto.randomUUID();
+      chrome.storage.local.set({ scrollStopperUserID: storedUserID });
+    } */
+
+      const fetchUserID = async() => {
+    //setUserID(storedUserID);
+    setUserID("1"); //for testing purposes 
+  };
+  fetchUserID();
+  }, []);
+
+  useEffect(() => {
+    const fetchTasks = async() => {
+      if(!userID) return;
+      try{
+        const res = await fetch(`http://localhost:3010/todos/${userID}`); 
+        const data = await res.json();
+        setTodos(data); 
+        console.log("fetched");
+      } catch (error) {
+        console.log("no todos");
+      } 
+    }
+    fetchTasks();
+  }, [userID])
+
+
   return (
     <div className="App">
       <header>
@@ -18,14 +53,11 @@ function App() {
           <h3>Here's a list of things you'd rather be doing</h3>
           <p>
           <form>
-            <input type="checkbox" id="todo1"/>
-            <label htmlFor="todo1"> Write a Novel</label><br />
-
-            <input type="checkbox" id="todo2"/>
-            <label htmlFor="todo2"> Go Swimming</label><br />
-
-            <input type="checkbox" id="todo3"/>
-            <label htmlFor="todo3"> Go Draw Something</label><br/> <br/>
+            {todos.map((d, i) => 
+              <><input type="checkbox" id={i} />
+              <label htmlFor={i}>{d.task}</label></>
+            )}
+            <br/><br/>
             <button>I'm Done With These</button>
           </form></p></div>
           <br/><br/>

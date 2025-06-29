@@ -6,22 +6,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect("url");
+mongoose.connect(process.env.MONGO_URL);
 
-const Todo = mongoose.model("Todo", {
+const ScrollStopper = mongoose.model("ScrollStopper", {
   userId: String,
   task: String,
-});
+}, "ScrollStopper");
 
 //get based on user id
 app.get("/todos/:userId", async (req, res) =>{
-    const todos = await db.ScrollStopper.find({userId: req.params.userId});
+    const todos = await ScrollStopper.find({userId: req.params.userId});
     res.json(todos);
 });
 
 //post singular to-do
 app.post("/todos", async (req, res) => {
-    const todo = new Todo(req.body);
+    const todo = new ScrollStopper(req.body);
     await todo.save();
     res.json(todo);
 });
@@ -30,7 +30,7 @@ app.post("/todos", async (req, res) => {
 app.delete("/todos", async (req, res) => {
     const {ids} = req.body;
     try {
-        await db.ScrollStopper.deleteMany({_id: {$in:ids}});
+        await ScrollStopper.deleteMany({_id: {$in:ids}});
         res.json({message: "Successful deletion" });
     } catch (error) {
         console.error(error);
@@ -38,4 +38,9 @@ app.delete("/todos", async (req, res) => {
     }
 })
 
-app.listen(3001, () => console.log("API running on http://localhost:3001"));
+app.get("/debug", async (req, res) => {
+  const count = await ScrollStopper.countDocuments({});
+  res.json({ message: "Connected", totalTodos: count });
+});
+
+app.listen(3010, () => console.log("API running on http://localhost:3010"));
