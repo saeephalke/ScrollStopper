@@ -5,7 +5,7 @@ import { use } from 'react';
 
 function App() {
   //important states for the app
-  const [userID, setUserID] = useState("");
+  const [userID, setUserID] = useState("1"); //1 is default ID
   const [todos, setTodos] = useState([]);
   const [checkedTasks, setCheckedTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
@@ -13,18 +13,14 @@ function App() {
 
   //get the userID
   useEffect(() => {
-    /* chrome.storage.local.get(['scrollStopperUserID'], async (result) => {
-      let storedUserID = result.scrollStopperUserID;
-    if(!storedUserID){
-      storedUserID = crypto.randomUUID();
-      chrome.storage.local.set({ scrollStopperUserID: storedUserID });
-    } */
-
-    const fetchUserID = async() => {
-      //setUserID(storedUserID);
-      setUserID("1"); //for testing purposes 
-    };
-  fetchUserID();
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      //looks for chrome's storedUserID
+      chrome.storage.local.get(["scrollStopperUserID"], (result) => {
+        if(result.scrollStopperUserID) {
+          setUserID(result.scrollStopperUserID);
+        }
+      })
+    } 
   }, []);
 
   //get the user's tasks
@@ -129,6 +125,7 @@ function App() {
           <h3>This is how much time you've spent scrolling</h3>
           <div>
             {Object.entries(siteTimes).map(([host, time]) => (
+              //display the different scroll times in a list
               <p key = {host}>
                 <b>{formatHostname(host)} </b> : {formatTime(time)}
               </p>
@@ -139,7 +136,8 @@ function App() {
 
         <br/><br/>
         <div class="card">
-          <h3>Here's a list of things you'd rather be doing</h3>      
+          <h3>Here's a list of things you'd rather be doing</h3>    
+            
           <form>
             {todos.map((d, i) => 
               <div key={d._id}><input type="checkbox" id={i} 
