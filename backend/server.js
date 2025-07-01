@@ -8,6 +8,7 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URL);
 
+//schema for tasks in the database
 const ScrollStopper = mongoose.model("ScrollStopper", {
   userId: String,
   task: String,
@@ -38,6 +39,7 @@ app.delete("/todos", async (req, res) => {
     }
 })
 
+//counts how many items are in the cluster
 app.get("/debug", async (req, res) => {
   const count = await ScrollStopper.countDocuments({});
   res.json({ message: "Connected", totalTodos: count });
