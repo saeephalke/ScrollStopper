@@ -5,6 +5,7 @@ function App() {
 
   const [userID, setUserID] = useState("");
   const [todos, setTodos] = useState([]);
+  const [checkedTasks, setCheckedTasks] = useState([]);
 
   useEffect(() => {
     /* chrome.storage.local.get(['scrollStopperUserID'], async (result) => {
@@ -14,10 +15,10 @@ function App() {
       chrome.storage.local.set({ scrollStopperUserID: storedUserID });
     } */
 
-      const fetchUserID = async() => {
-    //setUserID(storedUserID);
-    setUserID("1"); //for testing purposes 
-  };
+    const fetchUserID = async() => {
+      //setUserID(storedUserID);
+      setUserID("1"); //for testing purposes 
+    };
   fetchUserID();
   }, []);
 
@@ -36,7 +37,19 @@ function App() {
     fetchTasks();
   }, [userID])
 
-
+  const deleteTasks = async () => {
+    const res = await fetch(`http://localhost:3010/todos/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ids: checkedTasks})
+    });
+    const result = res.json();
+    console.log("hello")
+    setTodos(prevTodos => prevTodos.filter(todo => !checkedTasks.includes(todo._id)));
+    setCheckedTasks([]);
+  }
   return (
     <div className="App">
       <header>
@@ -54,11 +67,24 @@ function App() {
           <p>
           <form>
             {todos.map((d, i) => 
-              <><input type="checkbox" id={i} />
-              <label htmlFor={i}>{d.task}</label></>
+              <div key={d._id}><input type="checkbox" id={i} 
+              onChange={(e) => {
+                if(e.target.checked) {
+                  setCheckedTasks(prev => [...prev, d._id])
+                } else {
+                  setCheckedTasks(prev => prev.filter(id => id !== d._id))
+                }
+              }}/>
+
+
+              <label htmlFor={i}>{d.task}</label><br/></div>
             )}
-            <br/><br/>
-            <button>I'm Done With These</button>
+            <br/>
+            <button onClick={(e) => {
+              e.preventDefault();
+              deleteTasks();
+            }
+            }>I'm Done With These</button>
           </form></p></div>
           <br/><br/>
 
