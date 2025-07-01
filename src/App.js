@@ -5,7 +5,7 @@ import { use } from 'react';
 
 function App() {
   //important states for the app
-  const [userID, setUserID] = useState("1"); //1 is default ID
+  const [userID, setUserID] = useState(null); //1 is default ID
   const [todos, setTodos] = useState([]);
   const [checkedTasks, setCheckedTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
@@ -13,14 +13,15 @@ function App() {
 
   //get the userID
   useEffect(() => {
-    if(typeof chrome !== "undefined" && chrome.storage) {
-      //looks for chrome's storedUserID
-      chrome.storage.local.get(["scrollStopperUserID"], (result) => {
-        if(result.scrollStopperUserID) {
-          setUserID(result.scrollStopperUserID);
-        }
-      })
-    } 
+    const getUserID = async () => {
+      const result = await new Promise((resolve) => {
+        chrome.storage.local.get(["scrollStopperUserID"], resolve);
+      });
+      if(result.scrollStopperUserID){
+        setUserID(result.scrollStopperUserID);
+      }
+    }
+    getUserID();
   }, []);
 
   //get the user's tasks
@@ -44,14 +45,17 @@ function App() {
 
   //gets user's time
   useEffect(() => {
-    if(typeof chrome !== "undefined" && chrome.storage) {
+    const getTimes = async() => {
+      if(typeof chrome !== "undefined" && chrome.storage) {
       const interval = setInterval(() => {
         chrome.storage.local.get(["siteTimes"], (result) => {
           setSiteTime(result.siteTimes || {}); 
         });
       }, 1000);
-      return () => clearInterval(interval);
+        return () => clearInterval(interval);
+      }
     }
+    getTimes();
   }, [])
 
   //delete any unwanted tasks
