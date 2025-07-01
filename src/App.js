@@ -6,6 +6,7 @@ function App() {
   const [userID, setUserID] = useState("");
   const [todos, setTodos] = useState([]);
   const [checkedTasks, setCheckedTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
     /* chrome.storage.local.get(['scrollStopperUserID'], async (result) => {
@@ -29,9 +30,8 @@ function App() {
         const res = await fetch(`http://localhost:3010/todos/${userID}`); 
         const data = await res.json();
         setTodos(data); 
-        console.log("fetched");
       } catch (error) {
-        console.log("no todos");
+        console.log("error catching todos");
       } 
     }
     fetchTasks();
@@ -45,11 +45,28 @@ function App() {
       },
       body: JSON.stringify({ids: checkedTasks})
     });
-    const result = res.json();
-    console.log("hello")
     setTodos(prevTodos => prevTodos.filter(todo => !checkedTasks.includes(todo._id)));
     setCheckedTasks([]);
   }
+
+  const addTask = async () => {
+    console.log(newTask);
+    const res = await fetch(`http://localhost:3010/todos/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: userID,
+        task: newTask,
+      }),
+    })
+
+    const added = await res.json();
+    setTodos(prev => [...prev, added]);
+    setNewTask("");
+  }
+
   return (
     <div className="App">
       <header>
@@ -64,7 +81,7 @@ function App() {
         <br/><br/>
         <div class="card">
           <h3>Here's a list of things you'd rather be doing</h3>
-          <p>
+          
           <form>
             {todos.map((d, i) => 
               <div key={d._id}><input type="checkbox" id={i} 
@@ -75,8 +92,6 @@ function App() {
                   setCheckedTasks(prev => prev.filter(id => id !== d._id))
                 }
               }}/>
-
-
               <label htmlFor={i}>{d.task}</label><br/></div>
             )}
             <br/>
@@ -85,18 +100,22 @@ function App() {
               deleteTasks();
             }
             }>I'm Done With These</button>
-          </form></p></div>
+          </form><br/></div>
           <br/><br/>
 
           <div class="card">
             <h3>Add something new</h3>
-            <p>
+            
             <form>
-              <input type="text" id="newtask" placeholder="Add New Task"/>
+              <input type="text" id="newtask" placeholder="Add New Task" value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}/>
               <label htmlFor="newtask"></label>
               <br/><br/>
-              <button>Add New Wishlist Item</button>
-            </form></p>
+              <button onClick={(e) => {
+                e.preventDefault();
+                addTask();
+              }}>Add New Wishlist Item</button>
+            </form><br/>
           </div>
         <br/><br/>
       </main>
