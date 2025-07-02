@@ -5,94 +5,62 @@ import logo from "./logo.svg";
 
 function App() {
   //important states for the app
-  const [userID, setUserID] = useState(null); //1 is default ID
   const [todos, setTodos] = useState([]);
   const [checkedTasks, setCheckedTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [siteTimes, setSiteTime] = useState({});
 
-  //get the userID
+  //get the user's tasks from chrome storage
   useEffect(() => {
-    const getUserID = async () => {
-      const result = await new Promise((resolve) => {
-        chrome.storage.local.get(["scrollStopperUserID"], resolve);
-      });
-      if(result.scrollStopperUserID){
-        setUserID(result.scrollStopperUserID);
-      }
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.get(["todos"], (result) =>{
+        setTodos(result.todos || []);
+      })
     }
-    getUserID();
-  }, []);
-
-  //get the user's tasks
-  useEffect(() => {
-    const fetchTasks = async() => {
-
-      //api call to get tasks based on userID
-      if(!userID) return;
-      try{
-        const res = await fetch(`http://localhost:3010/todos/${userID}`); 
-        const data = await res.json();
-        setTodos(data); 
-      } catch (error) {
-        //error handling
-        console.log("error catching todos");
-      } 
-    }
-    fetchTasks();
-    //dependant on userID obviously
-  }, [userID])
+  }, [])
 
   //gets user's time
   useEffect(() => {
-    const getTimes = async() => {
-      if(typeof chrome !== "undefined" && chrome.storage) {
-      const interval = setInterval(() => {
-        chrome.storage.local.get(["siteTimes"], (result) => {
-          setSiteTime(result.siteTimes || {}); 
-        });
-      }, 1000);
-        return () => clearInterval(interval);
-      }
-    }
-    getTimes();
-  }, [])
+  if (typeof chrome !== "undefined" && chrome.storage) {
+    const interval = setInterval(() => {
+      chrome.storage.local.get(["siteTimes"], (result) => {
+        setSiteTime(result.siteTimes || {}); 
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }
+}, []);
 
   //delete any unwanted tasks
   const deleteTasks = async () => {
-
-    //api call
-    const res = await fetch(`http://localhost:3010/todos/`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ids: checkedTasks})
-    });
-
-    //filters out deleted tasks from the todos
-    setTodos(prevTodos => prevTodos.filter(todo => !checkedTasks.includes(todo._id)));
-    //clears the todos
-    setCheckedTasks([]);
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.get(["todos"], (result) => {
+        const filtered = (result.todos || []).filter(todo => !checkedTasks.includes(todo._id));
+        chrome.storage.local.set({todos: filtered});
+        //filters out deleted tasks from the todos
+        setTodos(prevTodos => prevTodos.filter(todo => !checkedTasks.includes(todo._id)));
+        //clears the todos
+        setCheckedTasks([]);
+      });
+    }
   }
 
   //add a new task
   const addTask = async () => {
-    console.log(newTask);
-    const res = await fetch(`http://localhost:3010/todos/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: userID,
-        task: newTask,
-      }),
-    })
-
-    const added = await res.json();
-    setTodos(prev => [...prev, added]); //adds to the todos to make a change
-    setNewTask("");
+    const newTodo = {
+      _id: crypto.randomUUID(),
+      task: newTask,
+    } 
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.get(["todos"], result => {
+        const currentTodos = result.todos || [];
+        const updatedTodos = [...currentTodos, newTodo];
+        chrome.storage.local.set({todos:updatedTodos});
+      })
+      setTodos(prev => [...prev, newTodo]);
+      setNewTask("");
+    }
   }
 
   //this function is used to format time
@@ -112,7 +80,7 @@ function App() {
       "www.tiktok.com": "TikTok",
     };
 
-    if (customNames[host]) return customNames[host];
+    return customNames[host] || host;
   }
 
 
