@@ -24,7 +24,7 @@ code {
 }
 
 .card{
-  border-radius: 16px;
+  border-radius: 14px;
   background: linear-gradient(to bottom right, #ffffff, #7ce2fc);
   padding: 1.5rem;
   width: 80%;
@@ -32,7 +32,7 @@ code {
   max-width: 400px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   color: #045876;
-  font-size: 14px;
+  font-size: 16px;
   align-items: center;
 }
 
@@ -66,7 +66,6 @@ p{
   padding-left: 10px;
   padding-right: 10px;
   font-size: 16px;
-  font-weight: 500;
 }
 
 button {
@@ -91,10 +90,11 @@ button:hover {
 
 input{
   border: 1.5px solid #52b1c4;
-  font-size: 14px;
+  font-size: 16px;
   border-radius: 30px;
   color:#218397;
   padding: 14px;
+  background-color: #e3faff;
 }
 
 #newtask::placeholder{
@@ -115,19 +115,7 @@ label{
 }
 
 .wishlist{
-  font-weight: 500;
   color: #218397;
-}
-
-a{
-  color: #DEF3F8;
-  padding-left: 10px;
-  padding-right: 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  gap: 10px;
-  align-items: center;
 }
 
 .title-bar {
@@ -146,9 +134,9 @@ img{
 .list{
   width: 80%;
   text-align: left;
-  background-color: #ffffff;
-  border-radius: 15px;
-  padding: 10px;
-  margin-left: 8%;
-  border: 1.5px solid #52b1c4;
+  background-color: #baf1ff;
+  border-radius: 30px;
+  padding: 15px;
+  margin-left: 6%;
+  border: 1px solid #52b1c4;
 }

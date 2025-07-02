@@ -83,6 +83,31 @@ function App() {
     return customNames[host] || host;
   }
 
+  function renderTodos(){
+
+    if(todos.length == 0){
+      return(        
+      <><label class="wishlist">Please add an activity using the card below</label><br /><br/></>
+      )
+    }
+    return (
+      todos.map((d, i) => 
+      <div key={d._id}><input type="checkbox" id={i} 
+        onChange={(e) => {
+          if(e.target.checked) {
+            //adds tasks to checkedTasks when checked
+            setCheckedTasks(prev => [...prev, d._id])
+            } else {
+              //removes tasks from checkedTasks when checked
+              setCheckedTasks(prev => prev.filter(id => id !== d._id))
+              }
+            }}/>
+          <label class="wishlist" htmlFor={i}>{d.task}</label><br/> <br/> </div>
+            
+        )
+      )
+  }
+
 
   return (
     <div className="App">
@@ -110,20 +135,7 @@ function App() {
           <form>
             <div class="list">
               <br/>
-            {todos.map((d, i) => 
-              <div key={d._id}><input type="checkbox" id={i} 
-              onChange={(e) => {
-                if(e.target.checked) {
-                  //adds tasks to checkedTasks when checked
-                  setCheckedTasks(prev => [...prev, d._id])
-                } else {
-                  //removes tasks from checkedTasks when checked
-                  setCheckedTasks(prev => prev.filter(id => id !== d._id))
-                }
-              }}/>
-              <label class="wishlist" htmlFor={i}>{d.task}</label><br/> <br/> </div>
-            
-            )}</div>
+            {renderTodos()}</div>
             <br/>
             <button onClick={(e) => {
               //deletes checked tasks on click
