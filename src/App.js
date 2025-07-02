@@ -120,13 +120,13 @@ function App() {
     <div className="App">
 
       <header>
-        <h1>Stop Scrolling Social Media!!!</h1>
+        <h1>Scroll Stopper</h1>
       </header>
       <main>
 
 
         <div class="card">
-          <h3>This is how much time you've spent scrolling</h3>
+          <h3>Time Wasted Scrolling</h3>
           <div>
             {Object.entries(siteTimes).map(([host, time]) => (
               //display the different scroll times in a list
@@ -137,12 +137,12 @@ function App() {
           </div>         
         </div>
 
-
-        <br/><br/>
         <div class="card">
-          <h3>Here's a list of things you'd rather be doing</h3>    
+          <h3>Wishlist Items</h3>   
+          <br/> 
             
           <form>
+            <div class="wishlist">
             {todos.map((d, i) => 
               <div key={d._id}><input type="checkbox" id={i} 
               onChange={(e) => {
@@ -154,24 +154,23 @@ function App() {
                   setCheckedTasks(prev => prev.filter(id => id !== d._id))
                 }
               }}/>
-              <label htmlFor={i}>{d.task}</label><br/></div>
-            )}
+              <label htmlFor={i}>{d.task}</label><br/> <br/> </div>
+            
+            )}</div>
             <br/>
             <button onClick={(e) => {
               //deletes checked tasks on click
               e.preventDefault();
               deleteTasks();
             }
-            }>I'm Done With These</button>
+            }>I Finished These Items</button>
           </form><br/></div>
-          <br/><br/>
-
 
           <div class="card">
-            <h3>Add something new</h3>
-            
+            <h3>What Else Is There to Do</h3>
+            <br/>
             <form>
-              <input type="text" id="newtask" placeholder="Add New Task" value={newTask}
+              <input class="wider" type="text" id="newtask" placeholder="What have you been meaning to do" value={newTask}
               onChange={(e) => 
               /*changes value in textbox to be new task */ 
               setNewTask(e.target.value)}/>
