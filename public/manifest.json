@@ -5,7 +5,12 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
-    "default_title": "Scroll Stopper"
+    "default_title": "Scroll Stopper",
+    "default_icon": {
+      "16": "ScrollStopper16.png",
+      "48": "ScrollStopper48.png",
+      "128": "ScrollStopper128.png"
+    }
   },
   "permissions":[
     "tabs",
@@ -15,10 +20,15 @@
   ],
   "host_permissions": [
     "https://www.instagram.com/*",
-    "https://www.youtube.com/shorts/*",
+    "https://www.youtube.com/*",
     "https://www.tiktok.com/*"
   ],
   "background": {
     "service_worker": "background.js"
+  },
+  "icons":{
+     "16": "ScrollStopper16.png",
+     "48": "ScrollStopper48.png",
+     "128": "ScrollStopper128.png"
   }
 } 

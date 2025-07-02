@@ -21,9 +21,10 @@ chrome.storage.local.get(["scrollStopperUserID"], (result) => {
   }
 })
 
-
-
+//does nativgation between tabs
 function handleNavigation(details) {
+  console.log("handleNavigation triggered:", details.url);
+  if(details.frameId !== 0 ) return; //to avoid background triggers (main frame)
   if (triggeredTabs.has(details.tabId)) return; //don't trigger if tab was visited
   
   const url = new URL(details.url);
@@ -40,6 +41,7 @@ function handleNavigation(details) {
 
 //when a tab changes, then count the time
 function handleTabChange(details) {
+  console.log("handleTabChange triggered:", details.url);
   chrome.tabs.get(details.tabId, (tab) => {
     if(!tab.url) return;
 

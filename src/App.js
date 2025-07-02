@@ -119,15 +119,15 @@ function App() {
   return (
     <div className="App">
 
-      <header>
-        <h1>SCROLL STOPPER</h1>
+      <header className="title-bar">
+        <h1>SCROLL STOPPER</h1> <img src="ScrollStopper48.png"></img>  
       </header>
       <main>
 
 
         <div class="card">
           <h3>TIME WASTED SCROLLING</h3>
-          <div>
+          <div class="timelist">
             {Object.entries(siteTimes).map(([host, time]) => (
               //display the different scroll times in a list
               <p key = {host}>
@@ -170,7 +170,7 @@ function App() {
             <h3>WHAT ELSE IS THERE TO DO</h3>
             <br/>
             <form>
-              <input class="wider" type="text" id="newtask" placeholder="What have you been meaning to do" value={newTask}
+              <input class="wider" type="text" id="newtask" placeholder="Write a new wishlist item" value={newTask}
               onChange={(e) => 
               /*changes value in textbox to be new task */ 
               setNewTask(e.target.value)}/>
@@ -185,7 +185,7 @@ function App() {
           </div>
 
 
-        <br/><br/>
+        <br/><br/> <br/> 
       </main>
     </div>
   );
