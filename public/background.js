@@ -9,17 +9,6 @@ const scrollSites = [
 let activeStartTime = null; //timer
 let activeHost = null; //the current host
 
-//grabs the UserID or creates on if doesn't exist
-chrome.storage.local.get(["scrollStopperUserID"], (result) => {
-  if(!result.scrollStopperUserID) {
-    const id = crypto.randomUUID();
-    chrome.storage.local.set({ scrollStopperUserID : id}, ()=> {
-      console.log("new userID generated");
-    });
-  } else {
-    console.log("Existing userID");
-  }
-})
 
 //does nativgation between tabs
 function handleNavigation(details) {
