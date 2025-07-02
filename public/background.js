@@ -2,7 +2,7 @@ const triggeredTabs = new Set(); //the set of triggered tabs
 const redirectURL = chrome.runtime.getURL("index.html"); //redirct url for when tab changes
 const scrollSites = [
   "www.instagram.com",
-  "www.youtube.com",
+  "www.youtube.com/shorts",
   "www.tiktok.com",
 ]; //sites to look out for (give any suggestions for other sites!!)
 
@@ -77,7 +77,7 @@ function saveTime(host, duration) {
 const urlFilter = {
   url: [
     { urlMatches: "^https://www.instagram.com/.*" },
-    { urlMatches: "^https://www.youtube.com/.*" },
+    { urlMatches: "^https://www.youtube.com/shorts/.*" },
     { urlMatches: "^https://www.tiktok.com/.*" }
   ],
   frameId: 0
