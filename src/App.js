@@ -120,13 +120,13 @@ function App() {
     <div className="App">
 
       <header>
-        <h1>Scroll Stopper</h1>
+        <h1>SCROLL STOPPER</h1>
       </header>
       <main>
 
 
         <div class="card">
-          <h3>Time Wasted Scrolling</h3>
+          <h3>TIME WASTED SCROLLING</h3>
           <div>
             {Object.entries(siteTimes).map(([host, time]) => (
               //display the different scroll times in a list
@@ -138,7 +138,7 @@ function App() {
         </div>
 
         <div class="card">
-          <h3>Wishlist Items</h3>   
+          <h3>WISHLIST ITEMS</h3>   
           <br/> 
             
           <form>
@@ -167,7 +167,7 @@ function App() {
           </form><br/></div>
 
           <div class="card">
-            <h3>What Else Is There to Do</h3>
+            <h3>WHAT ELSE IS THERE TO DO</h3>
             <br/>
             <form>
               <input class="wider" type="text" id="newtask" placeholder="What have you been meaning to do" value={newTask}
