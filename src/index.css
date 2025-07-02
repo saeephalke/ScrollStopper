@@ -22,6 +22,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
 .card{
   border-radius: 16px;
   background: linear-gradient(to bottom right, #ffffff, #7ce2fc);
@@ -32,6 +33,7 @@ code {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   color: #045876;
   font-size: 14px;
+  align-items: center;
 }
 
 header{
@@ -113,28 +115,8 @@ label{
 }
 
 .wishlist{
-  text-align: left;
-  padding-left: 10%;
   font-weight: 500;
   color: #218397;
-}
-
-.timelist{
-  text-align: left;
-  padding-left: 22%;
-  font-weight: 500;
-  color: #218397;
-}
-
-footer{
-  background: linear-gradient(to bottom right, #024861, #218397);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  text-align: left;
-  padding: 1%;
 }
 
 a{
@@ -159,4 +141,14 @@ a{
 img{
   border-radius: 7px;
   size:48px;
+}
+
+.list{
+  width: 80%;
+  text-align: left;
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 10px;
+  margin-left: 8%;
+  border: 1.5px solid #52b1c4;
 }

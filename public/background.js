@@ -9,7 +9,6 @@ const scrollSites = [
 let activeStartTime = null; //timer
 let activeHost = null; //the current host
 
-
 //does nativgation between tabs
 function handleNavigation(details) {
   console.log("handleNavigation triggered:", details.url);

@@ -95,7 +95,7 @@ function App() {
 
         <div class="card">
           <h3>TIME WASTED SCROLLING</h3>
-          <div class="timelist">
+          <div class="list">
             {Object.entries(siteTimes).map(([host, time]) => (
               //display the different scroll times in a list
               <p key = {host}>
@@ -106,11 +106,10 @@ function App() {
         </div>
 
         <div class="card">
-          <h3>WISHLIST ITEMS</h3>   
-          <br/> 
-            
+          <h3>THINGS YOU'D RATHER BE DOING</h3> 
           <form>
-            <div class="wishlist">
+            <div class="list">
+              <br/>
             {todos.map((d, i) => 
               <div key={d._id}><input type="checkbox" id={i} 
               onChange={(e) => {
@@ -122,7 +121,7 @@ function App() {
                   setCheckedTasks(prev => prev.filter(id => id !== d._id))
                 }
               }}/>
-              <label htmlFor={i}>{d.task}</label><br/> <br/> </div>
+              <label class="wishlist" htmlFor={i}>{d.task}</label><br/> <br/> </div>
             
             )}</div>
             <br/>
@@ -131,14 +130,14 @@ function App() {
               e.preventDefault();
               deleteTasks();
             }
-            }>I Finished These Items</button>
+            }>I'm Actually Done With These</button>
           </form><br/></div>
 
           <div class="card">
-            <h3>WHAT ELSE IS THERE TO DO</h3>
+            <h3>A NEW THING YOU'D RATHER BE DOING</h3>
             <br/>
             <form>
-              <input class="wider" type="text" id="newtask" placeholder="Write a new wishlist item" value={newTask}
+              <input class="wider" type="text" id="newtask" placeholder="Write something from your wishlist here" value={newTask}
               onChange={(e) => 
               /*changes value in textbox to be new task */ 
               setNewTask(e.target.value)}/>
@@ -148,7 +147,7 @@ function App() {
                 //adds new task on click
                 e.preventDefault();
                 addTask();
-              }}>Add New Wishlist Item</button>
+              }}>Add New Scroll Stopping Activity</button>
             </form><br/>
           </div>
 
