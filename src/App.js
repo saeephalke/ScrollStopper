@@ -1,7 +1,7 @@
 /* global chrome */
 import { useEffect, useState } from 'react';
 import './App.css';
-import { use } from 'react';
+import logo from "./logo.svg";
 
 function App() {
   //important states for the app
@@ -120,7 +120,7 @@ function App() {
     <div className="App">
 
       <header className="title-bar">
-        <h1>SCROLL STOPPER</h1> <img src="ScrollStopper48.png"></img>  
+        <h1>SCROLL STOPPER</h1> <img src={logo} width={48}></img>  
       </header>
       <main>
 
