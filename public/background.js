@@ -1,11 +1,15 @@
 const triggeredTabs = new Set(); //the set of triggered tabs
 const redirectURL = chrome.runtime.getURL("index.html"); //redirct url for when tab changes
-const scrollSites = [
-  "www.instagram.com",
-  "www.youtube.com",
-  "www.tiktok.com",
-  "www.facebook.com"
-]; //sites to look out for (give any suggestions for other sites!!)
+const urlFilter = {};
+
+//get the scroll sites from storage
+const scrollSites = chrome.storage.get(['scrollSites'], (result) => {
+  const storedSites = result.scrollSites|| [];
+  //create a filter
+  urlFilter = generateUrlFilter(storedSites);
+  //update listeners
+  updateNavigationListeners(urlFilter);
+}); //stores user sites and then creates a URL filter
 
 let activeStartTime = null; //timer
 let activeHost = null; //the current host
@@ -63,7 +67,7 @@ function saveTime(host, duration) {
 }
 
 //this filter is used so that redirects only happen based on these sites
-const urlFilter = {
+urlFilter = {
   url: [
     { urlMatches: "^https://www.instagram.com/.*" },
     { urlMatches: "^https://www.youtube.com/.*" },
@@ -73,6 +77,28 @@ const urlFilter = {
   frameId: 0
 };
 
-chrome.webNavigation.onCompleted.addListener(handleNavigation, urlFilter);
-chrome.webNavigation.onHistoryStateUpdated.addListener(handleNavigation, urlFilter);
+//generate a filter from an array of sites
+function generateUrlFilter(sites){
+  return{
+    url: sites.map(site => ({
+      urlMatches: `^https://${site}/.*`;
+    })),
+    frameId: 0
+  };
+}
+
+//update navigation listeners
+function updateNavigationListeners(filter){
+
+  //remove old ones
+  chrome.webNavigation.onCompleted.removeListener(handleNavigation);
+  chrome.webNavigation.onHistoryStateUpdated.removeListener(handleNavigation);
+
+  //add new ones
+  chrome.webNavigation.onCompleted.addListener(handleNavigation, filter);
+  chrome.webNavigation.onHistoryStateUpdated.addListener(handleNavigation, filter);
+}
+
+
+
 chrome.tabs.onActivated.addListener(handleTabChange);
