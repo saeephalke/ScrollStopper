@@ -84,14 +84,17 @@ function App() {
     return customNames[host] || host;
   }
 
+  //renders todos conditionally
   function renderTodos(){
 
+    //if no todos put a message
     if(todos.length == 0){
       return(        
       <><label class="wishlist">Please add an activity using the card below</label><br /><br/></>
       )
     }
     return (
+      //otherwise map them
       todos.map((d, i) => 
       <div key={d._id}><input type="checkbox" id={i} 
         onChange={(e) => {
@@ -109,6 +112,22 @@ function App() {
       )
   }
 
+  //conditional rendering for scroll times, but different since times is a dictionary
+  function renderTimes(){
+    if(Object.entries(siteTimes).length == 0){
+      return (<p>Start scrolling to see your time wasted</p>)
+    }
+
+    return (
+      Object.entries(siteTimes).map(([host, time]) => (
+        //display the different scroll times in a list
+        <p key = {host}>
+          <b>{formatHostname(host)} </b> : {formatTime(time)}
+        </p>
+      ))
+    )
+  }
+
 
   return (
     <div className="App">
@@ -118,16 +137,10 @@ function App() {
       </header>
       <main>
 
-
         <div class="card">
           <h3>TIME WASTED SCROLLING</h3>
           <div class="list">
-            {Object.entries(siteTimes).map(([host, time]) => (
-              //display the different scroll times in a list
-              <p key = {host}>
-                <b>{formatHostname(host)} </b> : {formatTime(time)}
-              </p>
-            ))}
+            {renderTimes()}
           </div>         
         </div>
 
@@ -143,7 +156,7 @@ function App() {
               e.preventDefault();
               deleteTasks();
             }
-            }>I'm Actually Done With These</button>
+            }>I Actually Did These</button>
           </form><br/></div>
 
           <div class="card">
