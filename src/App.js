@@ -10,6 +10,7 @@ function App() {
   const [checkedTasks, setCheckedTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [siteTimes, setSiteTime] = useState({});
+  const [scrollSites, setScrollSites] = useState([]);
   const [siteInput, setSiteInput] = useState(""); //sites to add or remove
 
   //get the user's tasks from chrome storage
@@ -33,6 +34,15 @@ function App() {
     return () => clearInterval(interval);
   }
 }, []);
+
+//get the scrollsites
+useEffect(() =>{
+  if(typeof chrome !== "undefined" && chrome.storage) {
+    chrome.storage.local.get(["scrollSites"], (result) => {
+      setScrollSites(result.scrollSites || []);
+    })
+  }
+})
 
   //delete any unwanted tasks
   const deleteTasks = async () => {
@@ -76,19 +86,12 @@ function App() {
 
   //this function formats the host names
   const formatHostname = (host) => {
-    const customNames = {
-      "www.facebook.com" : "Facebook",
-      "www.instagram.com": "Instagram",
-      "www.youtube.com": "YouTube",
-      "www.tiktok.com": "TikTok",
-    };
-
-    return customNames[host] || host;
+    const cleaned = host.replace(/^www\./, "").replace(/\.com$/, "");
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
   }
 
   //renders todos conditionally
   function renderTodos(){
-
     //if no todos put a message
     if(todos.length == 0){
       return(        
@@ -130,6 +133,26 @@ function App() {
     )
   }
 
+  function renderScollSites(){
+    if(scrollSites.length == 0){
+      return(<p>Add a Scroll Site</p>)
+    }
+    return(
+      scrollSites.map((d, i) => 
+      <div key={i}><p>{formatHostname(d)}</p></div>
+      )
+    )
+  }
+
+  function removeSiteTracking() {
+    console.log("removed " + siteInput);
+    setSiteInput("");
+  }
+
+  function addSiteTracking(){
+    console.log("added " + siteInput);
+    setSiteInput("");
+  }
 
   return (
     <div className="App">
@@ -181,14 +204,19 @@ function App() {
           <div class="card">
            <h3>ADD OR REMOVE DISTRACTING SITES</h3>
            <br/>
-            <div class="list"> <p>distraction sites</p></div>
+            <div class="list">{renderScollSites()}</div>
             <br/>
             <form>
               <input class="wider" type="text" id="siteInput" placeholder="Write site to add or remove" value={siteInput}
               onChange={(e) => 
               /*changes the site input*/ 
               setSiteInput(e.target.value)}/><br/><br/>
-              <button type="button">Add Site</button> <Popup trigger={<button type="button" onClick={(e) => e.preventDefault()}>Remove Site</button>} modal nested>
+              <button type="button" style={{ marginRight: '12px'}} onClick={(e) => {
+                e.preventDefault();
+                addSiteTracking();
+              }}>Add Site</button>
+              
+              <Popup trigger={<button type="button" onClick={(e) => e.preventDefault()}>Remove Site</button>} modal nested>
               {
                 close => (
                   <div class="popup-card">
@@ -197,7 +225,11 @@ function App() {
                       e.preventDefault();
                       close();
                     }
-                      }>No</button> <br/><br/> <button class="popupbtn" type="button">Yes</button>
+                      }>No</button> <br/><br/> <button class="popupbtn" type="button" onClick={(e) => {
+                        e.preventDefault();
+                        removeSiteTracking();
+                        close();
+                      }}>Yes</button>
                   </div>
                 )
               }
