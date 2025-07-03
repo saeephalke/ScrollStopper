@@ -42,7 +42,7 @@ header{
   top: 0;
   left: 0;
   width: 100%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
 h1{
@@ -141,5 +141,5 @@ img{
   padding: 15px;
   margin-left: 6%;
   border: 0px solid #52b1c4;
-  box-shadow: 0 4px 20px rgba(4, 88, 118, 0.4);
+  box-shadow: 0 4px 20px rgba(4, 88, 118, 0.6);
 }

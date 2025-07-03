@@ -1,6 +1,6 @@
 {
   "name": "Scroll Stopper",
-  "description": "React Chrome Extension that gets you to stop scrolling instagram and youtube shorts",
+  "description": "A Chrome Extension that stops you from scrolling addictive sites by encouraging you to engage in activities you actually enjoy",
   "version": "1.0.0",
   "manifest_version": 3,
   "action": {
