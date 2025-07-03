@@ -21,7 +21,8 @@
   "host_permissions": [
     "https://www.instagram.com/*",
     "https://www.youtube.com/*",
-    "https://www.tiktok.com/*"
+    "https://www.tiktok.com/*",
+    "https://www.facebook.com/*"
   ],
   "background": {
     "service_worker": "background.js"

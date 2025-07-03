@@ -75,6 +75,7 @@ function App() {
   //this function formats the host names
   const formatHostname = (host) => {
     const customNames = {
+      "www.facebook.com" : "Facebook",
       "www.instagram.com": "Instagram",
       "www.youtube.com": "YouTube",
       "www.tiktok.com": "TikTok",
@@ -149,7 +150,7 @@ function App() {
             <h3>A NEW THING YOU'D RATHER BE DOING</h3>
             <br/>
             <form>
-              <input class="wider" type="text" id="newtask" placeholder="Write something from your wishlist here" value={newTask}
+              <input class="wider" type="text" id="newtask" placeholder="Write something from your wishlist" value={newTask}
               onChange={(e) => 
               /*changes value in textbox to be new task */ 
               setNewTask(e.target.value)}/>

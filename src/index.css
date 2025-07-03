@@ -13,7 +13,7 @@ body {
 }
 
 html{
-  background-color: #022B3A;
+  background: #022B3A;
 }
 main{
   padding-top: 80px; /* Adjust based on header height */
@@ -134,7 +134,7 @@ img{
 .list{
   width: 80%;
   text-align: left;
-  background-color: #baf1ff;
+  background: #baf1ff;
   border-radius: 30px;
   padding: 15px;
   margin-left: 6%;
