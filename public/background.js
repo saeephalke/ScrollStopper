@@ -1,34 +1,44 @@
+let scrollSites = new Set();
 const triggeredTabs = new Set(); //the set of triggered tabs
 const redirectURL = chrome.runtime.getURL("index.html"); //redirct url for when tab changes
-const urlFilter = {};
 
-//get the scroll sites from storage
-const scrollSites = chrome.storage.get(['scrollSites'], (result) => {
-  const storedSites = result.scrollSites|| [];
-  //create a filter
-  urlFilter = generateUrlFilter(storedSites);
-  //update listeners
-  updateNavigationListeners(urlFilter);
-}); //stores user sites and then creates a URL filter
-
+//generate a filter from an array of sites
+function generateUrlFilter(sites){
+  return{
+    url: Array.from(scrollSites).map(site => ({
+      urlMatches: `^https://${site}/.*`
+    })),
+    frameId: 0
+  };
+}
 let activeStartTime = null; //timer
 let activeHost = null; //the current host
+
+function initialize() {
+  chrome.storage.local.get(["scrollSites"], (result) => {
+    const sites = result.scrollSites || [];
+    scrollSites = new Set(sites);
+    updateNavigationListeners();
+  });
+}
+
 
 //does nativgation between tabs
 function handleNavigation(details) {
   console.log("handleNavigation triggered:", details.url);
   if(details.frameId !== 0 ) return; //to avoid background triggers (main frame)
-  if (triggeredTabs.has(details.tabId)) return; //don't trigger if tab was visited
   
   const url = new URL(details.url);
   const host = url.hostname;
 
-  if(scrollSites.includes(host)){
-    triggeredTabs.add(details.tabId); //add tab to not be triggered
-    chrome.tabs.create({ url: redirectURL }); //redirct
-    activeStartTime = Date.now();
-    activeHost = host;
-  }
+  if(!scrollSites.has(host)) return;
+  if(triggeredTabs.has(details.tabId)) return;
+ 
+  triggeredTabs.add(details.tabId);
+  chrome.tabs.create({ url: redirectURL });
+
+  activeStartTime = Date.now();
+  activeHost = host;
 
 }
 
@@ -40,7 +50,7 @@ function handleTabChange(details) {
 
     const host = new URL(tab.url).hostname; //get current host name
 
-    if(scrollSites.includes(host)) { //if currently underhost start tracking
+    if(scrollSites.has(host)) { //if currently underhost start tracking
       if(host != activeHost) {
         activeStartTime = Date.now(); //start timer
         activeHost = host; //set a host
@@ -66,30 +76,10 @@ function saveTime(host, duration) {
   });
 }
 
-//this filter is used so that redirects only happen based on these sites
-urlFilter = {
-  url: [
-    { urlMatches: "^https://www.instagram.com/.*" },
-    { urlMatches: "^https://www.youtube.com/.*" },
-    { urlMatches: "^https://www.tiktok.com/.*" },
-    { urlMatches: "^https://www.facebook.com/.*"}
-  ],
-  frameId: 0
-};
-
-//generate a filter from an array of sites
-function generateUrlFilter(sites){
-  return{
-    url: sites.map(site => ({
-      urlMatches: `^https://${site}/.*`;
-    })),
-    frameId: 0
-  };
-}
 
 //update navigation listeners
-function updateNavigationListeners(filter){
-
+function updateNavigationListeners(){
+  filter = generateUrlFilter();
   //remove old ones
   chrome.webNavigation.onCompleted.removeListener(handleNavigation);
   chrome.webNavigation.onHistoryStateUpdated.removeListener(handleNavigation);
@@ -99,6 +89,15 @@ function updateNavigationListeners(filter){
   chrome.webNavigation.onHistoryStateUpdated.addListener(handleNavigation, filter);
 }
 
+// Listen for changes to scrollSites and update
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.scrollSites) {
+    const newSites = changes.scrollSites.newValue || [];
+    scrollSites = new Set(newSites);
+    updateNavigationListeners();
+  }
+});
 
 
+initialize();
 chrome.tabs.onActivated.addListener(handleTabChange);

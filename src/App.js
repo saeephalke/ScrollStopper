@@ -90,6 +90,10 @@ useEffect(() =>{
     return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
   }
 
+  const unformatSite = (site) => {
+    const formatted = site.toLowerCase();
+    return `www.${formatted}.com`;
+  }
   //renders todos conditionally
   function renderTodos(){
     //if no todos put a message
@@ -111,10 +115,8 @@ useEffect(() =>{
               setCheckedTasks(prev => prev.filter(id => id !== d._id))
               }
             }}/>
-          <label class="wishlist" fonthtmlFor={i}>{d.task}</label><br/> <br/> </div>
-            
-        )
-      )
+          <label class="wishlist" fonthtmlFor={i}>{d.task}</label><br/> <br/> </div>        
+        ))
   }
 
   //conditional rendering for scroll times, but different since times is a dictionary
@@ -133,6 +135,7 @@ useEffect(() =>{
     )
   }
 
+  //render what sites the user has chosen to scroll
   function renderScollSites(){
     if(scrollSites.length == 0){
       return(<p>Add a Scroll Site</p>)
@@ -144,14 +147,33 @@ useEffect(() =>{
     )
   }
 
+  //remove a site to track
   function removeSiteTracking() {
-    console.log("removed " + siteInput);
+    const remove = unformatSite(siteInput);
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.get(["scrollSites"], result => {
+        const currentSites = result.scrollSites || [];
+        const updatedSites = currentSites.filter(site => site !== remove);
+        chrome.storage.local.set({ scrollSites: updatedSites });
+      })
+    }
+    setScrollSites(prev => prev.filter(site => site !== remove));
     setSiteInput("");
   }
 
+  //add a site to track
   function addSiteTracking(){
-    console.log("added " + siteInput);
-    setSiteInput("");
+    const newSite = unformatSite(siteInput);
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.get(["scrollSites"], result => {
+        const currentSites = result.scrollSites || [];
+        const updatedSites = [...currentSites, newSite];
+        chrome.storage.local.set({scrollSites:updatedSites});
+
+      })
+      setScrollSites(prev => [...prev, newSite]);
+      setSiteInput("");
+    }
   }
 
   return (
