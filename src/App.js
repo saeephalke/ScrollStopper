@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import logo from "./logo.svg";
+import Popup from "reactjs-popup";
 
 function App() {
   //important states for the app
@@ -9,6 +10,7 @@ function App() {
   const [checkedTasks, setCheckedTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [siteTimes, setSiteTime] = useState({});
+  const [siteInput, setSiteInput] = useState(""); //sites to add or remove
 
   //get the user's tasks from chrome storage
   useEffect(() => {
@@ -115,7 +117,7 @@ function App() {
   //conditional rendering for scroll times, but different since times is a dictionary
   function renderTimes(){
     if(Object.entries(siteTimes).length == 0){
-      return (<p>Start scrolling to see your time wasted</p>)
+      return (<p>Start scrolling to see your time wasted or add sites using the last card</p>)
     }
 
     return (
@@ -166,8 +168,7 @@ function App() {
               <input class="wider" type="text" id="newtask" placeholder="Write something from your wishlist" value={newTask}
               onChange={(e) => 
               /*changes value in textbox to be new task */ 
-              setNewTask(e.target.value)}/>
-              <label htmlFor="newtask"></label>
+              setNewTask(e.target.value)}/>        
               <br/><br/>
               <button onClick={(e) => {
                 //adds new task on click
@@ -176,6 +177,34 @@ function App() {
               }}>Add New Scroll Stopping Activity</button>
             </form><br/>
           </div>
+
+          <div class="card">
+           <h3>ADD OR REMOVE DISTRACTING SITES</h3>
+           <br/>
+            <div class="list"> <p>distraction sites</p></div>
+            <br/>
+            <form>
+              <input class="wider" type="text" id="siteInput" placeholder="Write site to add or remove" value={siteInput}
+              onChange={(e) => 
+              /*changes the site input*/ 
+              setSiteInput(e.target.value)}/><br/><br/>
+              <button type="button">Add Site</button> <Popup trigger={<button type="button" onClick={(e) => e.preventDefault()}>Remove Site</button>} modal nested>
+              {
+                close => (
+                  <div class="popup-card">
+                    <h3 class="popuph3">Are You Sure?</h3>
+                    <button type="button" class="popupbtn" onClick={(e) => {
+                      e.preventDefault();
+                      close();
+                    }
+                      }>No</button> <br/><br/> <button class="popupbtn" type="button">Yes</button>
+                  </div>
+                )
+              }
+                
+                </Popup>
+            </form>
+            </div>
 
 
         <br/><br/> <br/> 

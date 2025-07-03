@@ -103,12 +103,19 @@ input{
   box-sizing: 14px;
 }
 
+#siteInput::placeholder{
+  color: #218397;
+  box-sizing: 14px;
+}
+
 input[type="checkbox"] {
   accent-color: #218397;
 }
 
 .wider{
   width: 250px;
+  color: #218397;
+  box-sizing: 14px;
 }
 
 label{
@@ -141,5 +148,31 @@ img{
   padding: 15px;
   margin-left: 6%;
   border: 0px solid #52b1c4;
-  box-shadow: 0 4px 20px rgba(4, 88, 118, 0.6);
+  box-shadow: 0 4px 20px rgba(4, 88, 118, 0.8);
 }
+
+.popup-card {
+  width: 450px;
+  padding: 2rem;
+  border-radius: 1rem;
+  background: linear-gradient(to bottom right, #52b1c4, #218397);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+
+.popuph3 {
+  color:#DEF3F8;
+}
+
+.popupbtn{
+  width:200px;
+  background: linear-gradient(to bottom right, #ffffff, #7ce2fc);
+  color: #024861;
+}
+
+.popupbtn:hover{
+  width:200px;
+  background: linear-gradient(to bottom right, #045876, #218397);
+  color: #baf1ff;
+}
+
