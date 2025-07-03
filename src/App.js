@@ -106,7 +106,7 @@ function App() {
               setCheckedTasks(prev => prev.filter(id => id !== d._id))
               }
             }}/>
-          <label class="wishlist" htmlFor={i}>{d.task}</label><br/> <br/> </div>
+          <b><label class="wishlist" htmlFor={i}>{d.task}</label></b><br/> <br/> </div>
             
         )
       )
