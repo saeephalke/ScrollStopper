@@ -45,7 +45,7 @@ Whenever you visit **YouTube**, **TikTok**, **Instagram**, or **Facebook**, you'
 
 Version 1.0.0 (beta) is available at this repository's [releases page](https://github.com/saeephalke/ScrollStopper/releases)
 
-1. Go to the link posted above, download the zip file, and then unzip it
+1. Go to the link posted above, under `Assets` download the `Scroll.Stopper.zip` file only, and then unzip it
 2. Once you unzip the folder, go to `chrome://extensions/` and turn on `Developer Mode` on the upper right corner.
 3. Once you're in developer mode click the `Load Unpacked` button on the upper left corner, and select the `Scroll Stopper` folder you just downloaded.
 
