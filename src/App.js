@@ -219,18 +219,17 @@ useEffect(() =>{
               <Popup trigger={<button type="button" onClick={(e) => e.preventDefault()}>Remove Site</button>} modal nested>
               {
                 close => (
-                  <div class="popup-card">
-                    <h3 class="popuph3">Are You Sure?</h3>
+                  <><div class="overlay"><div class="popup-card">
+                    <h3 class="popuph3">ARE YOU SURE?</h3>
                     <button type="button" class="popupbtn" onClick={(e) => {
                       e.preventDefault();
                       close();
-                    }
-                      }>No</button> <br/><br/> <button class="popupbtn" type="button" onClick={(e) => {
-                        e.preventDefault();
-                        removeSiteTracking();
-                        close();
-                      }}>Yes</button>
-                  </div>
+                    } }>No</button> <br /><br /> <button class="popupbtn" type="button" onClick={(e) => {
+                      e.preventDefault();
+                      removeSiteTracking();
+                      close();
+                    } }>Yes</button>
+                  </div></div></>
                 )
               }
                 
