@@ -251,7 +251,7 @@ useEffect(() =>{
                 close => (
                   <><div class="overlay"><div class="popup-card">
                     <h3 class="popuph3">ARE YOU SURE YOU WANT TO REMOVE THE FOLLOWING SITE?</h3>
-                    <p>{siteInput}</p>
+                    <p class="popuptext">{siteInput}</p>
                     <button type="button" class="popupbtn" onClick={(e) => {
                       e.preventDefault();
                       close();
