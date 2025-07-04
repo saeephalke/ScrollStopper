@@ -12,6 +12,7 @@ function App() {
   const [siteTimes, setSiteTime] = useState({});
   const [scrollSites, setScrollSites] = useState([]);
   const [siteInput, setSiteInput] = useState(""); //sites to add or remove
+  const [siteTimesReady, setSiteTimesReady] = useState(false); // ← NEW
 
   //get the user's tasks from chrome storage
   useEffect(() => {
@@ -23,19 +24,20 @@ function App() {
   }, [])
 
   //gets user's time
-  useEffect(() => {
+ useEffect(() => {
   if (typeof chrome !== "undefined" && chrome.storage) {
+    chrome.storage.local.get(["siteTimes"], (result) => {
+      setSiteTime(result.siteTimes || {});
+      setSiteTimesReady(true); // ← mark ready
+    });
+
     const handleChange = (changes, areaName) => {
       if (areaName === "local" && changes.siteTimes) {
         setSiteTime(changes.siteTimes.newValue || {});
       }
     };
-    chrome.storage.onChanged.addListener(handleChange);
 
-    // Initialize once on mount in case there's already data
-    chrome.storage.local.get(["siteTimes"], (result) => {
-      setSiteTime(result.siteTimes || {});
-    });
+    chrome.storage.onChanged.addListener(handleChange);
     return () => chrome.storage.onChanged.removeListener(handleChange);
   }
 }, []);
@@ -48,6 +50,7 @@ useEffect(() =>{
     })
   }
 })
+
 
   //delete any unwanted tasks
   const deleteTasks = async () => {
@@ -65,6 +68,9 @@ useEffect(() =>{
 
   //add a new task
   const addTask = async () => {
+    if(newTask === "") {
+      return;
+    }
     const newTodo = {
       _id: crypto.randomUUID(),
       task: newTask,
@@ -154,6 +160,7 @@ useEffect(() =>{
 
   //remove a site to track
   function removeSiteTracking() {
+    if(siteInput === "") return;
     const remove = unformatSite(siteInput);
     if(typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.local.get(["scrollSites"], result => {
@@ -168,6 +175,7 @@ useEffect(() =>{
 
   //add a site to track
   function addSiteTracking(){
+    if(siteInput === "") return;
     const newSite = unformatSite(siteInput);
     if(typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.local.get(["scrollSites"], result => {
@@ -180,7 +188,7 @@ useEffect(() =>{
       setSiteInput("");
     }
   }
-
+  
   return (
     <div className="App">
 
@@ -193,7 +201,7 @@ useEffect(() =>{
           <h3>TIME WASTED SCROLLING</h3>
           <div class="list">
             {renderTimes()}
-          </div>         
+          </div>  
         </div>
 
         <div class="card">

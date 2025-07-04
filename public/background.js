@@ -75,24 +75,10 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
         activeHost = host;
       }
     } else {
-      if (activeStartTime && activeHost) {
-        const duration = Date.now() - activeStartTime;
-        saveTime(activeHost, duration);
         activeStartTime = null;
         activeHost = null;
-      }
     }
   });
-});
-
-// Track time when tab is closed
-chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  if (activeStartTime && activeHost) {
-    const duration = Date.now() - activeStartTime;
-    saveTime(activeHost, duration);
-    activeStartTime = null;
-    activeHost = null;
-  }
 });
 
 // Track when tab is updated (e.g., URL change in same tab)
@@ -106,12 +92,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       activeHost = host;
     }
   } else {
-    if (activeStartTime && activeHost) {
-      const duration = Date.now() - activeStartTime;
-      saveTime(activeHost, duration);
       activeStartTime = null;
       activeHost = null;
-    }
   }
 });
 //saves the time to chrome local storage
@@ -145,5 +127,28 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "GET_SITE_TIMES") {
+    chrome.storage.local.get(["siteTimes"], (result) => {
+      sendResponse({ siteTimes: result.siteTimes || {} });
+    });
+    return true; // Required for async sendResponse
+  }
+});
+
 
 initialize();
+
+chrome.alarms.create("periodicTimeSave", { periodInMinutes: 0.1 }); // every 6 seconds
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "periodicTimeSave") {
+    console.log("[Alarm] Fired");
+    if (activeStartTime && activeHost) {
+      const duration = Date.now() - activeStartTime;
+      console.log(`[Alarm] Saving ${duration}ms for ${activeHost}`);
+      saveTime(activeHost, duration);
+      activeStartTime = Date.now(); // reset timer
+    }
+  }
+});
