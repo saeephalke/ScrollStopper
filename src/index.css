@@ -171,7 +171,7 @@ img{
   color:#DEF3F8;
 }
 
-.popupbtn{
+.popupbtn-yes{
   width:200px;
   font-size: 18px;
   background: linear-gradient(to bottom right, #ffffff, #7ce2fc);
@@ -179,19 +179,33 @@ img{
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
-.popupbtn:hover{
+.popupbtn-no{
   width:200px;
-  background: linear-gradient(to bottom right, #52b1c4, #045876);
+  font-size: 18px;
+  background: linear-gradient(to bottom right, #ffffff, #7ce2fc);
+  color: #024861;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+} 
+
+.popupbtn-yes:hover{
+  width:200px;
+  background: linear-gradient(to bottom right, #eb3892, #c40665);
+  color: #DEF3F8;
+}
+
+.popupbtn-no:hover{
+  width:200px;
+  background: linear-gradient(to bottom right, #37cfe3, #03a9bc);
   color: #DEF3F8;
 }
 
 .overlay {
   position: fixed;
-  top: 0;
+  top: 78px;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4); /* black with 40% opacity */
+  background-color: rgba(218, 242, 247, 0.4); /* black with 40% opacity */
   z-index: 999; /* just under popup */
 }
 

@@ -274,11 +274,11 @@ useEffect(() =>{
                   <><div class="overlay"><div class="popup-card">
                     <h3 class="popuph3">ARE YOU SURE YOU WANT TO REMOVE THE FOLLOWING SITE?</h3>
                     <p class="popuptext">{siteInput}</p>
-                    <button type="button" class="popupbtn" onClick={(e) => {
+                    <button type="button" class="popupbtn-no" onClick={(e) => {
                       e.preventDefault();
                       close();
                       setSiteInput("");
-                    } }>No</button> <br /><br /> <button class="popupbtn" type="button" onClick={(e) => {
+                    } }>No</button> <br /><br /> <button class="popupbtn-yes" type="button" onClick={(e) => {
                       e.preventDefault();
                       removeSiteTracking();
                       close();
