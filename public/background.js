@@ -6,6 +6,23 @@ let activeHost = null; //the current host
 const COOLDOWN = 10 * 60 * 1000;
 const lastRedirectTime = new Map();
 
+
+function setActiveState(host) {
+  chrome.storage.session.set({
+    activeHost: host,
+    activeStartTime: Date.now()
+  });
+}
+
+function clearActiveState() {
+  chrome.storage.session.remove(["activeHost", "activeStartTime"]);
+}
+
+function getActiveState(callback) {
+  chrome.storage.session.get(["activeHost", "activeStartTime"], callback);
+}
+
+
 //generate a filter from an array of sites
 function generateUrlFilter(){
   return{
