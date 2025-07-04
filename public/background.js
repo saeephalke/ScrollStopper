@@ -56,9 +56,18 @@ function handleNavigation(details) {
   if(last != 0 && now - last < COOLDOWN) return;
 
   lastRedirectTime.set(host, now);
+  chrome.storage.session.set({
+    lastRedirectTime: Object.fromEntries(lastRedirectTime)
+  });
+
   chrome.tabs.create({ url: redirectURL });
   activeStartTime = now;
   activeHost = host;
+
+  chrome.storage.session.set({
+    activeHost,
+    activeStartTime,
+  });
 
 }
 
@@ -73,10 +82,15 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
       if (host !== activeHost) {
         activeStartTime = Date.now();
         activeHost = host;
+        chrome.storage.session.set({
+          activeHost,
+          activeStartTime,
+        });
       }
     } else {
         activeStartTime = null;
         activeHost = null;
+        chrome.storage.session.remove(["activeHost", "activeStartTime"]);
     }
   });
 });
@@ -90,10 +104,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (host !== activeHost) {
       activeStartTime = Date.now();
       activeHost = host;
+      chrome.storage.session.set({
+        activeHost,
+        activeStartTime,
+      });
     }
   } else {
       activeStartTime = null;
       activeHost = null;
+      chrome.storage.session.remove(["activeHost", "activeStartTime"]);
   }
 });
 //saves the time to chrome local storage
@@ -138,6 +157,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 initialize();
+
+chrome.storage.session.get(["activeHost", "activeStartTime"], (result) => {
+  if (result.activeHost && result.activeStartTime) {
+    activeHost = result.activeHost;
+    activeStartTime = result.activeStartTime;
+    console.log(`[Restore] Resumed tracking ${activeHost} from ${new Date(activeStartTime)}`);
+  }
+});
+
+chrome.storage.session.get(["lastRedirectTime"], (result) => {
+  if (result.lastRedirectTime) {
+    lastRedirectTime = new Map(Object.entries(result.lastRedirectTime).map(([k, v]) => [k, Number(v)]));
+  }
+});
 
 chrome.alarms.create("periodicTimeSave", { periodInMinutes: 0.1 }); // every 6 seconds
 
