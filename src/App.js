@@ -12,6 +12,7 @@ function App() {
   const [siteTimes, setSiteTime] = useState({});
   const [scrollSites, setScrollSites] = useState([]);
   const [siteInput, setSiteInput] = useState(""); //sites to add or remove
+  const [showPopup, setShowPopup] = useState(false);
 
   //get the user's tasks from chrome storage
   useEffect(() => {
@@ -126,12 +127,23 @@ useEffect(() =>{
 
   //conditional rendering for scroll times, but different since times is a dictionary
   function renderTimes(){
-    if(Object.entries(siteTimes).length == 0){
+    console.log("Scroll SItes");
+    console.log(scrollSites);
+    console.log("Site Times ");
+    console.log(siteTimes);
+
+    const scrollSet = new Set(scrollSites);
+
+    const filteredTimes = Object.entries(siteTimes).filter(([host]) =>{
+      return scrollSet.has(host);
+    });
+
+    if(filteredTimes.length == 0){
       return (<p>Start scrolling to see your time wasted or add sites using the last card</p>)
     }
 
     return (
-      Object.entries(siteTimes).map(([host, time]) => (
+      filteredTimes.map(([host, time]) => (
         //display the different scroll times in a list
         <p key = {host}>
           <b>{formatHostname(host)} </b> : {formatTime(time)}
@@ -168,9 +180,10 @@ useEffect(() =>{
 
   //add a site to track
   function addSiteTracking(){
-    if(siteInput === "") return;
-    if(siteInput.indexOf(".") == -1) return; 
-    if(scrollSites.includes(siteInput)) return;
+    if(siteInput === "" || siteInput.indexOf(".") == -1 || scrollSites.includes(siteInput)) {
+      setSiteInput("");
+      return;
+    }
 
     if(typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.local.get(["scrollSites"], result => {
@@ -182,6 +195,7 @@ useEffect(() =>{
       setScrollSites(prev => [...prev, siteInput]);
       setSiteInput("");
     }
+  
   }
   
   return (
@@ -211,7 +225,7 @@ useEffect(() =>{
               e.preventDefault();
               deleteTasks();
             }
-            }>I'm Done Doing These'</button>
+            }>I'm Done Doing These</button>
           </form><br/></div>
 
           <div class="card">
@@ -244,9 +258,17 @@ useEffect(() =>{
               <button type="button" class="scrollSitesbtn" style={{ marginRight: '12px'}} onClick={(e) => {
                 e.preventDefault();
                 addSiteTracking();
-              }}>Add Site</button>
+              }}>Add Site</button> 
+
+              <button type="button" class="scrollSitesbtn" 
+              onClick={(e) => {e.preventDefault();
+                if (!scrollSites.includes(siteInput)) {
+                  setShowPopup(false);
+                  setSiteInput("");
+                } else {setShowPopup(true);}
+              }}>Remove Site</button>
               
-              <Popup trigger={<button type="button" class="scrollSitesbtn" onClick={(e) => e.preventDefault()}>Remove Site</button>} modal nested>
+              <Popup open={showPopup} onClose={() => setShowPopup(false)}modal nested>
               {
                 close => (
                   <><div class="overlay"><div class="popup-card">
