@@ -62,8 +62,8 @@ h3{
 }
 
 p{
-  color: #218397;
-  padding-left: 10px;
+  color: #045876;
+  padding-left: 15px;
   padding-right: 10px;
   font-size: 16px;
 }
@@ -113,18 +113,20 @@ input[type="checkbox"] {
 }
 
 .wider{
-  width: 250px;
+  width: 300px;
   color: #218397;
   box-sizing: 14px;
 }
 
 label{
+  color: #045876;
   font-size: 16px;
 }
 
 .wishlist{
-  color: #218397;
-  font-weight: 500;
+  color: #045876;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .title-bar {
@@ -143,12 +145,12 @@ img{
 .list{
   width: 80%;
   text-align: left;
-  background: #baf1ff;
+  background: linear-gradient(to bottom right, #8ee4fa ,#baf1ff);
   border-radius: 30px;
   padding: 15px;
   margin-left: 6%;
   border: 0px solid #52b1c4;
-  box-shadow: 0 4px 20px rgba(4, 88, 118, 0.8);
+  box-shadow: 0 7px 15px rgba(8, 141, 189, 0.6);
 }
 
 .popup-card {
@@ -161,7 +163,7 @@ img{
   padding: 2rem;
   border-radius: 1rem;
   background: linear-gradient(to bottom right, #024861, #022B3A);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 1);
+  box-shadow: 0 7px 30px rgba(0, 0, 0, 1);
   text-align: center;
 }
 
@@ -193,3 +195,6 @@ img{
   z-index: 999; /* just under popup */
 }
 
+.scrollSitesbtn{
+  width:150px;
+}

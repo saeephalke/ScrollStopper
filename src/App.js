@@ -143,11 +143,11 @@ useEffect(() =>{
   //render what sites the user has chosen to scroll
   function renderScollSites(){
     if(scrollSites.length == 0){
-      return(<p>Add a Scroll Site</p>)
+      return(<p>Add Distracting Sites</p>)
     }
     return(
       scrollSites.map((d, i) => 
-      <div key={i}><p>{formatHostname(d)}</p></div>
+      <div key={i}><b><p>{d}</p></b></div>
       )
     )
   }
@@ -211,7 +211,7 @@ useEffect(() =>{
               e.preventDefault();
               deleteTasks();
             }
-            }>I Actually Did These</button>
+            }>I'm Done Doing These'</button>
           </form><br/></div>
 
           <div class="card">
@@ -241,12 +241,12 @@ useEffect(() =>{
               onChange={(e) => 
               /*changes the site input*/ 
               setSiteInput(e.target.value)}/><br/><br/>
-              <button type="button" style={{ marginRight: '12px'}} onClick={(e) => {
+              <button type="button" class="scrollSitesbtn" style={{ marginRight: '12px'}} onClick={(e) => {
                 e.preventDefault();
                 addSiteTracking();
               }}>Add Site</button>
               
-              <Popup trigger={<button type="button" onClick={(e) => e.preventDefault()}>Remove Site</button>} modal nested>
+              <Popup trigger={<button type="button" class="scrollSitesbtn" onClick={(e) => e.preventDefault()}>Remove Site</button>} modal nested>
               {
                 close => (
                   <><div class="overlay"><div class="popup-card">
@@ -255,6 +255,7 @@ useEffect(() =>{
                     <button type="button" class="popupbtn" onClick={(e) => {
                       e.preventDefault();
                       close();
+                      setSiteInput("");
                     } }>No</button> <br /><br /> <button class="popupbtn" type="button" onClick={(e) => {
                       e.preventDefault();
                       removeSiteTracking();
