@@ -1,78 +1,154 @@
+let scrollSites = new Set();
 const triggeredTabs = new Set(); //the set of triggered tabs
 const redirectURL = chrome.runtime.getURL("index.html"); //redirct url for when tab changes
-const scrollSites = [
-  "www.instagram.com",
-  "www.youtube.com",
-  "www.tiktok.com",
-  "www.facebook.com"
-]; //sites to look out for (give any suggestions for other sites!!)
-
 let activeStartTime = null; //timer
 let activeHost = null; //the current host
+const COOLDOWN = 10 * 60 * 1000;
+const lastRedirectTime = new Map();
+
+
+function setActiveState(host) {
+  chrome.storage.session.set({
+    activeHost: host,
+    activeStartTime: Date.now()
+  });
+}
+
+function clearActiveState() {
+  chrome.storage.session.remove(["activeHost", "activeStartTime"]);
+}
+
+function getActiveState(callback) {
+  chrome.storage.session.get(["activeHost", "activeStartTime"], callback);
+}
+
+
+//generate a filter from an array of sites
+function generateUrlFilter(){
+  return{
+    url: Array.from(scrollSites).map(site => ({
+      urlMatches: `^https://${site}/.*`
+    })),
+    frameId: 0
+  };
+}
+
+function initialize() {
+  chrome.storage.local.get(["scrollSites"], (result) => {
+    const sites = result.scrollSites || [];
+    scrollSites = new Set(sites);
+    updateNavigationListeners();
+  });
+}
+
 
 //does nativgation between tabs
 function handleNavigation(details) {
-  console.log("handleNavigation triggered:", details.url);
-  if(details.frameId !== 0 ) return; //to avoid background triggers (main frame)
-  if (triggeredTabs.has(details.tabId)) return; //don't trigger if tab was visited
   
   const url = new URL(details.url);
   const host = url.hostname;
 
-  if(scrollSites.includes(host)){
-    triggeredTabs.add(details.tabId); //add tab to not be triggered
-    chrome.tabs.create({ url: redirectURL }); //redirct
-    activeStartTime = Date.now();
-    activeHost = host;
-  }
+  if(!scrollSites.has(host)) return;
+  if (details.frameId !== 0) return;
+  
+  const now = Date.now();
+  const last = lastRedirectTime.get(host) || 0;
+  if(last != 0 && now - last < COOLDOWN) return;
+
+  lastRedirectTime.set(host, now);
+  chrome.tabs.create({ url: redirectURL });
+  activeStartTime = now;
+  activeHost = host;
 
 }
 
-//when a tab changes, then count the time
-function handleTabChange(details) {
-  console.log("handleTabChange triggered:", details.url);
-  chrome.tabs.get(details.tabId, (tab) => {
-    if(!tab.url) return;
 
-    const host = new URL(tab.url).hostname; //get current host name
+// Track when tab is switched
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  chrome.tabs.get(tabId, (tab) => {
+    if (!tab.url) return;
+    const host = new URL(tab.url).hostname;
 
-    if(scrollSites.includes(host)) { //if currently underhost start tracking
-      if(host != activeHost) {
-        activeStartTime = Date.now(); //start timer
-        activeHost = host; //set a host
+    if (scrollSites.has(host)) {
+      if (host !== activeHost) {
+        activeStartTime = Date.now();
+        activeHost = host;
       }
-    } else { //otherwise when change
-      if(activeStartTime && activeHost) { //if these variables aren't null
-        const duration = Date.now() - activeStartTime; //get the duration
-        saveTime(activeHost, duration); //save the same
-        activeStartTime = null; //set them to null
+    } else {
+        activeStartTime = null;
         activeHost = null;
-      }
     }
   });
-}
+});
 
+// Track when tab is updated (e.g., URL change in same tab)
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!tab.url || changeInfo.status !== "complete") return;
+  const host = new URL(tab.url).hostname;
+
+  if (scrollSites.has(host)) {
+    if (host !== activeHost) {
+      activeStartTime = Date.now();
+      activeHost = host;
+    }
+  } else {
+      activeStartTime = null;
+      activeHost = null;
+  }
+});
 //saves the time to chrome local storage
 function saveTime(host, duration) {
   chrome.storage.local.get(["siteTimes"], (result) => {
-    const siteTimes = result.siteTimes || {};
-    siteTimes[host] = (siteTimes[host] || 0) + duration;
-    chrome.storage.local.set({ siteTimes }, () => {
-    });
+    const old = result.siteTimes || {};
+    const updated = { ...old, [host]: (old[host] || 0) + duration };
+    chrome.storage.local.set({ siteTimes: updated });
   });
 }
 
-//this filter is used so that redirects only happen based on these sites
-const urlFilter = {
-  url: [
-    { urlMatches: "^https://www.instagram.com/.*" },
-    { urlMatches: "^https://www.youtube.com/.*" },
-    { urlMatches: "^https://www.tiktok.com/.*" },
-    { urlMatches: "^https://www.facebook.com/.*"}
-  ],
-  frameId: 0
-};
 
-chrome.webNavigation.onCompleted.addListener(handleNavigation, urlFilter);
-chrome.webNavigation.onHistoryStateUpdated.addListener(handleNavigation, urlFilter);
-chrome.tabs.onActivated.addListener(handleTabChange);
+//update navigation listeners
+function updateNavigationListeners(){
+  const filter = generateUrlFilter();
+  //remove old ones
+  chrome.webNavigation.onCompleted.removeListener(handleNavigation);
+  chrome.webNavigation.onHistoryStateUpdated.removeListener(handleNavigation);
+
+  //add new ones
+  chrome.webNavigation.onCompleted.addListener(handleNavigation, filter);
+  chrome.webNavigation.onHistoryStateUpdated.addListener(handleNavigation, filter);
+}
+
+// Listen for changes to scrollSites and update
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.scrollSites) {
+    const newSites = changes.scrollSites.newValue || [];
+    scrollSites = new Set(newSites);
+    updateNavigationListeners();
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "GET_SITE_TIMES") {
+    chrome.storage.local.get(["siteTimes"], (result) => {
+      sendResponse({ siteTimes: result.siteTimes || {} });
+    });
+    return true; // Required for async sendResponse
+  }
+});
+
+
+initialize();
+
+chrome.alarms.create("periodicTimeSave", { periodInMinutes: 0.1 }); // every 6 seconds
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "periodicTimeSave") {
+    console.log("[Alarm] Fired");
+    if (activeStartTime && activeHost) {
+      const duration = Date.now() - activeStartTime;
+      console.log(`[Alarm] Saving ${duration}ms for ${activeHost}`);
+      saveTime(activeHost, duration);
+      activeStartTime = Date.now(); // reset timer
+    }
+  }
+});

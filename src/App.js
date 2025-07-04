@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import logo from "./logo.svg";
+import Popup from "reactjs-popup";
 
 function App() {
   //important states for the app
@@ -9,6 +10,9 @@ function App() {
   const [checkedTasks, setCheckedTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [siteTimes, setSiteTime] = useState({});
+  const [scrollSites, setScrollSites] = useState([]);
+  const [siteInput, setSiteInput] = useState(""); //sites to add or remove
+  const [showPopup, setShowPopup] = useState(false);
 
   //get the user's tasks from chrome storage
   useEffect(() => {
@@ -20,17 +24,32 @@ function App() {
   }, [])
 
   //gets user's time
-  useEffect(() => {
+ useEffect(() => {
   if (typeof chrome !== "undefined" && chrome.storage) {
-    const interval = setInterval(() => {
-      chrome.storage.local.get(["siteTimes"], (result) => {
-        setSiteTime(result.siteTimes || {}); 
-      });
-    }, 1000);
+    chrome.storage.local.get(["siteTimes"], (result) => {
+      setSiteTime(result.siteTimes || {});
+    });
 
-    return () => clearInterval(interval);
+    const handleChange = (changes, areaName) => {
+      if (areaName === "local" && changes.siteTimes) {
+        setSiteTime(changes.siteTimes.newValue || {});
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleChange);
+    return () => chrome.storage.onChanged.removeListener(handleChange);
   }
 }, []);
+
+//get the scrollsites
+useEffect(() =>{
+  if(typeof chrome !== "undefined" && chrome.storage) {
+    chrome.storage.local.get(["scrollSites"], (result) => {
+      setScrollSites(result.scrollSites || []);
+    })
+  }
+})
+
 
   //delete any unwanted tasks
   const deleteTasks = async () => {
@@ -48,6 +67,9 @@ function App() {
 
   //add a new task
   const addTask = async () => {
+    if(newTask === "") {
+      return;
+    }
     const newTodo = {
       _id: crypto.randomUUID(),
       task: newTask,
@@ -74,19 +96,12 @@ function App() {
 
   //this function formats the host names
   const formatHostname = (host) => {
-    const customNames = {
-      "www.facebook.com" : "Facebook",
-      "www.instagram.com": "Instagram",
-      "www.youtube.com": "YouTube",
-      "www.tiktok.com": "TikTok",
-    };
-
-    return customNames[host] || host;
+    const cleaned = host.replace(/^www\./, "");
+    return cleaned;
   }
 
   //renders todos conditionally
   function renderTodos(){
-
     //if no todos put a message
     if(todos.length == 0){
       return(        
@@ -106,20 +121,29 @@ function App() {
               setCheckedTasks(prev => prev.filter(id => id !== d._id))
               }
             }}/>
-          <label class="wishlist" fonthtmlFor={i}>{d.task}</label><br/> <br/> </div>
-            
-        )
-      )
+          <label class="wishlist" fonthtmlFor={i}>{d.task}</label><br/> <br/> </div>        
+        ))
   }
 
   //conditional rendering for scroll times, but different since times is a dictionary
   function renderTimes(){
-    if(Object.entries(siteTimes).length == 0){
-      return (<p>Start scrolling to see your time wasted</p>)
+    console.log("Scroll SItes");
+    console.log(scrollSites);
+    console.log("Site Times ");
+    console.log(siteTimes);
+
+    const scrollSet = new Set(scrollSites);
+
+    const filteredTimes = Object.entries(siteTimes).filter(([host]) =>{
+      return scrollSet.has(host);
+    });
+
+    if(filteredTimes.length == 0){
+      return (<p>Start scrolling to see your time wasted or add sites using the last card</p>)
     }
 
     return (
-      Object.entries(siteTimes).map(([host, time]) => (
+      filteredTimes.map(([host, time]) => (
         //display the different scroll times in a list
         <p key = {host}>
           <b>{formatHostname(host)} </b> : {formatTime(time)}
@@ -128,7 +152,52 @@ function App() {
     )
   }
 
+  //render what sites the user has chosen to scroll
+  function renderScollSites(){
+    if(scrollSites.length == 0){
+      return(<p>Add Distracting Sites</p>)
+    }
+    return(
+      scrollSites.map((d, i) => 
+      <div key={i}><b><p>{d}</p></b></div>
+      )
+    )
+  }
 
+  //remove a site to track
+  function removeSiteTracking() {
+    if(siteInput === "") return;
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.get(["scrollSites"], result => {
+        const currentSites = result.scrollSites || [];
+        const updatedSites = currentSites.filter(site => site !== siteInput);
+        chrome.storage.local.set({ scrollSites: updatedSites });
+      })
+    }
+    setScrollSites(prev => prev.filter(site => site !== siteInput));
+    setSiteInput("");
+  }
+
+  //add a site to track
+  function addSiteTracking(){
+    if(siteInput === "" || siteInput.indexOf(".") == -1 || scrollSites.includes(siteInput)) {
+      setSiteInput("");
+      return;
+    }
+
+    if(typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.get(["scrollSites"], result => {
+        const currentSites = result.scrollSites || [];
+        const updatedSites = [...currentSites, siteInput,];
+        chrome.storage.local.set({scrollSites:updatedSites});
+
+      })
+      setScrollSites(prev => [...prev, siteInput]);
+      setSiteInput("");
+    }
+  
+  }
+  
   return (
     <div className="App">
 
@@ -141,7 +210,7 @@ function App() {
           <h3>TIME WASTED SCROLLING</h3>
           <div class="list">
             {renderTimes()}
-          </div>         
+          </div>  
         </div>
 
         <div class="card">
@@ -156,7 +225,7 @@ function App() {
               e.preventDefault();
               deleteTasks();
             }
-            }>I Actually Did These</button>
+            }>I'm Done Doing These</button>
           </form><br/></div>
 
           <div class="card">
@@ -166,8 +235,7 @@ function App() {
               <input class="wider" type="text" id="newtask" placeholder="Write something from your wishlist" value={newTask}
               onChange={(e) => 
               /*changes value in textbox to be new task */ 
-              setNewTask(e.target.value)}/>
-              <label htmlFor="newtask"></label>
+              setNewTask(e.target.value)}/>        
               <br/><br/>
               <button onClick={(e) => {
                 //adds new task on click
@@ -176,6 +244,52 @@ function App() {
               }}>Add New Scroll Stopping Activity</button>
             </form><br/>
           </div>
+
+          <div class="card">
+           <h3>ADD OR REMOVE DISTRACTING SITES</h3>
+           <br/>
+            <div class="list">{renderScollSites()}</div>
+            <br/>
+            <form>
+              <input class="wider" type="text" id="siteInput" placeholder="Write site to add or remove" value={siteInput}
+              onChange={(e) => 
+              /*changes the site input*/ 
+              setSiteInput(e.target.value)}/><br/><br/>
+              <button type="button" class="scrollSitesbtn" style={{ marginRight: '12px'}} onClick={(e) => {
+                e.preventDefault();
+                addSiteTracking();
+              }}>Add Site</button> 
+
+              <button type="button" class="scrollSitesbtn" 
+              onClick={(e) => {e.preventDefault();
+                if (!scrollSites.includes(siteInput)) {
+                  setShowPopup(false);
+                  setSiteInput("");
+                } else {setShowPopup(true);}
+              }}>Remove Site</button>
+              
+              <Popup open={showPopup} onClose={() => setShowPopup(false)}modal nested>
+              {
+                close => (
+                  <><div class="overlay"><div class="popup-card">
+                    <h3 class="popuph3">ARE YOU SURE YOU WANT TO REMOVE THE FOLLOWING SITE?</h3>
+                    <p class="popuptext">{siteInput}</p>
+                    <button type="button" class="popupbtn" onClick={(e) => {
+                      e.preventDefault();
+                      close();
+                      setSiteInput("");
+                    } }>No</button> <br /><br /> <button class="popupbtn" type="button" onClick={(e) => {
+                      e.preventDefault();
+                      removeSiteTracking();
+                      close();
+                    } }>Yes</button>
+                  </div></div></>
+                )
+              }
+                
+                </Popup>
+            </form>
+            </div>
 
 
         <br/><br/> <br/> 

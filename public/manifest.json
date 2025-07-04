@@ -16,7 +16,8 @@
     "tabs",
     "storage",
     "scripting",
-    "webNavigation"
+    "webNavigation",
+    "alarms"
   ],
   "host_permissions": [
     "https://www.instagram.com/*",
