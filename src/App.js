@@ -25,13 +25,18 @@ function App() {
   //gets user's time
   useEffect(() => {
   if (typeof chrome !== "undefined" && chrome.storage) {
-    const interval = setInterval(() => {
-      chrome.storage.local.get(["siteTimes"], (result) => {
-        setSiteTime(result.siteTimes || {}); 
-      });
-    }, 1000);
+    const handleChange = (changes, areaName) => {
+      if (areaName === "local" && changes.siteTimes) {
+        setSiteTime(changes.siteTimes.newValue || {});
+      }
+    };
+    chrome.storage.onChanged.addListener(handleChange);
 
-    return () => clearInterval(interval);
+    // Initialize once on mount in case there's already data
+    chrome.storage.local.get(["siteTimes"], (result) => {
+      setSiteTime(result.siteTimes || {});
+    });
+    return () => chrome.storage.onChanged.removeListener(handleChange);
   }
 }, []);
 
@@ -242,7 +247,8 @@ useEffect(() =>{
               {
                 close => (
                   <><div class="overlay"><div class="popup-card">
-                    <h3 class="popuph3">ARE YOU SURE?</h3>
+                    <h3 class="popuph3">ARE YOU SURE YOU WANT TO REMOVE THE FOLLOWING SITE?</h3>
+                    <p>{unformatSite(siteInput)}</p>
                     <button type="button" class="popupbtn" onClick={(e) => {
                       e.preventDefault();
                       close();

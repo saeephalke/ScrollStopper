@@ -1,9 +1,13 @@
 let scrollSites = new Set();
 const triggeredTabs = new Set(); //the set of triggered tabs
 const redirectURL = chrome.runtime.getURL("index.html"); //redirct url for when tab changes
+let activeStartTime = null; //timer
+let activeHost = null; //the current host
+const COOLDOWN = 10 * 60 * 1000;
+const lastRedirectTime = new Map();
 
 //generate a filter from an array of sites
-function generateUrlFilter(sites){
+function generateUrlFilter(){
   return{
     url: Array.from(scrollSites).map(site => ({
       urlMatches: `^https://${site}/.*`
@@ -11,8 +15,6 @@ function generateUrlFilter(sites){
     frameId: 0
   };
 }
-let activeStartTime = null; //timer
-let activeHost = null; //the current host
 
 function initialize() {
   chrome.storage.local.get(["scrollSites"], (result) => {
@@ -25,61 +27,89 @@ function initialize() {
 
 //does nativgation between tabs
 function handleNavigation(details) {
-  console.log("handleNavigation triggered:", details.url);
-  if(details.frameId !== 0 ) return; //to avoid background triggers (main frame)
   
   const url = new URL(details.url);
   const host = url.hostname;
 
   if(!scrollSites.has(host)) return;
-  if(triggeredTabs.has(details.tabId)) return;
- 
-  triggeredTabs.add(details.tabId);
-  chrome.tabs.create({ url: redirectURL });
+  if (details.frameId !== 0) return;
+  
+  const now = Date.now();
+  const last = lastRedirectTime.get(host) || 0;
+  if(last != 0 && now - last < COOLDOWN) return;
 
-  activeStartTime = Date.now();
+  lastRedirectTime.set(host, now);
+  chrome.tabs.create({ url: redirectURL });
+  activeStartTime = now;
   activeHost = host;
 
 }
 
-//when a tab changes, then count the time
-function handleTabChange(details) {
-  console.log("handleTabChange triggered:", details.url);
-  chrome.tabs.get(details.tabId, (tab) => {
-    if(!tab.url) return;
 
-    const host = new URL(tab.url).hostname; //get current host name
+// Track when tab is switched
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  chrome.tabs.get(tabId, (tab) => {
+    if (!tab.url) return;
+    const host = new URL(tab.url).hostname;
 
-    if(scrollSites.has(host)) { //if currently underhost start tracking
-      if(host != activeHost) {
-        activeStartTime = Date.now(); //start timer
-        activeHost = host; //set a host
+    if (scrollSites.has(host)) {
+      if (host !== activeHost) {
+        activeStartTime = Date.now();
+        activeHost = host;
       }
-    } else { //otherwise when change
-      if(activeStartTime && activeHost) { //if these variables aren't null
-        const duration = Date.now() - activeStartTime; //get the duration
-        saveTime(activeHost, duration); //save the same
-        activeStartTime = null; //set them to null
+    } else {
+      if (activeStartTime && activeHost) {
+        const duration = Date.now() - activeStartTime;
+        saveTime(activeHost, duration);
+        activeStartTime = null;
         activeHost = null;
       }
     }
   });
-}
+});
 
+// Track time when tab is closed
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+  if (activeStartTime && activeHost) {
+    const duration = Date.now() - activeStartTime;
+    saveTime(activeHost, duration);
+    activeStartTime = null;
+    activeHost = null;
+  }
+});
+
+// Track when tab is updated (e.g., URL change in same tab)
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!tab.url || changeInfo.status !== "complete") return;
+  const host = new URL(tab.url).hostname;
+
+  if (scrollSites.has(host)) {
+    if (host !== activeHost) {
+      activeStartTime = Date.now();
+      activeHost = host;
+    }
+  } else {
+    if (activeStartTime && activeHost) {
+      const duration = Date.now() - activeStartTime;
+      saveTime(activeHost, duration);
+      activeStartTime = null;
+      activeHost = null;
+    }
+  }
+});
 //saves the time to chrome local storage
 function saveTime(host, duration) {
   chrome.storage.local.get(["siteTimes"], (result) => {
-    const siteTimes = result.siteTimes || {};
-    siteTimes[host] = (siteTimes[host] || 0) + duration;
-    chrome.storage.local.set({ siteTimes }, () => {
-    });
+    const old = result.siteTimes || {};
+    const updated = { ...old, [host]: (old[host] || 0) + duration };
+    chrome.storage.local.set({ siteTimes: updated });
   });
 }
 
 
 //update navigation listeners
 function updateNavigationListeners(){
-  filter = generateUrlFilter();
+  const filter = generateUrlFilter();
   //remove old ones
   chrome.webNavigation.onCompleted.removeListener(handleNavigation);
   chrome.webNavigation.onHistoryStateUpdated.removeListener(handleNavigation);
@@ -100,4 +130,3 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 
 initialize();
-chrome.tabs.onActivated.addListener(handleTabChange);
