@@ -12,7 +12,6 @@ function App() {
   const [siteTimes, setSiteTime] = useState({});
   const [scrollSites, setScrollSites] = useState([]);
   const [siteInput, setSiteInput] = useState(""); //sites to add or remove
-  const [siteTimesReady, setSiteTimesReady] = useState(false); // ← NEW
 
   //get the user's tasks from chrome storage
   useEffect(() => {
@@ -28,7 +27,6 @@ function App() {
   if (typeof chrome !== "undefined" && chrome.storage) {
     chrome.storage.local.get(["siteTimes"], (result) => {
       setSiteTime(result.siteTimes || {});
-      setSiteTimesReady(true); // ← mark ready
     });
 
     const handleChange = (changes, areaName) => {
@@ -97,14 +95,10 @@ useEffect(() =>{
 
   //this function formats the host names
   const formatHostname = (host) => {
-    const cleaned = host.replace(/^www\./, "").replace(/\.com$/, "");
-    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    const cleaned = host.replace(/^www\./, "");
+    return cleaned;
   }
 
-  const unformatSite = (site) => {
-    const formatted = site.toLowerCase();
-    return `www.${formatted}.com`;
-  }
   //renders todos conditionally
   function renderTodos(){
     //if no todos put a message
@@ -161,30 +155,31 @@ useEffect(() =>{
   //remove a site to track
   function removeSiteTracking() {
     if(siteInput === "") return;
-    const remove = unformatSite(siteInput);
     if(typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.local.get(["scrollSites"], result => {
         const currentSites = result.scrollSites || [];
-        const updatedSites = currentSites.filter(site => site !== remove);
+        const updatedSites = currentSites.filter(site => site !== siteInput);
         chrome.storage.local.set({ scrollSites: updatedSites });
       })
     }
-    setScrollSites(prev => prev.filter(site => site !== remove));
+    setScrollSites(prev => prev.filter(site => site !== siteInput));
     setSiteInput("");
   }
 
   //add a site to track
   function addSiteTracking(){
     if(siteInput === "") return;
-    const newSite = unformatSite(siteInput);
+    if(siteInput.indexOf(".") == -1) return; 
+    if(scrollSites.includes(siteInput)) return;
+
     if(typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.local.get(["scrollSites"], result => {
         const currentSites = result.scrollSites || [];
-        const updatedSites = [...currentSites, newSite];
+        const updatedSites = [...currentSites, siteInput,];
         chrome.storage.local.set({scrollSites:updatedSites});
 
       })
-      setScrollSites(prev => [...prev, newSite]);
+      setScrollSites(prev => [...prev, siteInput]);
       setSiteInput("");
     }
   }
@@ -256,7 +251,7 @@ useEffect(() =>{
                 close => (
                   <><div class="overlay"><div class="popup-card">
                     <h3 class="popuph3">ARE YOU SURE YOU WANT TO REMOVE THE FOLLOWING SITE?</h3>
-                    <p>{unformatSite(siteInput)}</p>
+                    <p>{siteInput}</p>
                     <button type="button" class="popupbtn" onClick={(e) => {
                       e.preventDefault();
                       close();
