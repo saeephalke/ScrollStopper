@@ -65,14 +65,7 @@ function initialize() {
 //does nativgation between tabs
 function handleNavigation(details) {
   
-  chrome.storage.session.get(["activeHost", "activeStartTime"], (result) => {
-  if (result.activeHost && result.activeStartTime) {
-    const duration = Date.now() - result.activeStartTime;
-    if (duration >= 5000 && duration < 2 * 60 * 60 * 1000) {
-      saveTime(result.activeHost, duration);
-    }
-  }
-})
+  saveAndClearActiveTime();
 
   const url = new URL(details.url);
   const host = url.hostname;
@@ -117,16 +110,7 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
         });
       }
     } else {
-          if(activeHost != null && activeStartTime != null) {
-          const now = Date.now();
-          const duration = now - activeStartTime;
-          if(duration >= 5000 && duration < 2 * 60 * 60 * 1000){
-            saveTime(activeHost, duration);
-          }
-        }
-        activeStartTime = null;
-        activeHost = null;
-        chrome.storage.session.remove(["activeHost", "activeStartTime"]);
+        saveAndClearActiveTime();
     }
   });
 });
@@ -146,16 +130,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       });
     }
   } else {
-    if(activeHost != null && activeStartTime != null) {
-      const now = Date.now();
-      const duration = now - activeStartTime;
-      if(duration >= 5000 && duration < 2 * 60 * 60 * 1000){
-        saveTime(activeHost, duration);
-      }
-    }
-      activeStartTime = null;
-      activeHost = null;
-      chrome.storage.session.remove(["activeHost", "activeStartTime"]);
+    saveAndClearActiveTime();
   }
 });
 //saves the time to chrome local storage
@@ -179,6 +154,19 @@ function updateNavigationListeners(){
   //add new ones
   chrome.webNavigation.onCompleted.addListener(handleNavigation, filter);
   chrome.webNavigation.onHistoryStateUpdated.addListener(handleNavigation, filter);
+}
+
+function saveAndClearActiveTime() {
+  if (activeHost != null && activeStartTime != null) {
+    const now = Date.now();
+    const duration = now - activeStartTime;
+    if (duration >= 5000 && duration < 2 * 60 * 60 * 1000) {
+      saveTime(activeHost, duration);
+    }
+    activeHost = null;
+    activeStartTime = null;
+    chrome.storage.session.remove(["activeHost", "activeStartTime"]);
+  }
 }
 
 // Listen for changes to scrollSites and update
