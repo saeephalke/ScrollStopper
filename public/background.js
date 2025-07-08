@@ -39,12 +39,41 @@ function initialize() {
     scrollSites = new Set(sites);
     updateNavigationListeners();
   });
+
+  chrome.storage.session.get(["activeHost", "activeStartTime"], (result) =>{
+    if(result.activeHost & result.ArrayactiveStartTime){
+      const now = Date.now();
+      const duration = now - result.activeStartTime;
+
+      if(duration >= 5000 && duration < 2 * 60 * 60 * 1000){
+        console.log("saving time");
+        saveTime(result.activeHost, duration);
+      }
+
+      activeHost = result.activeHost;
+      activeStartTime = now;
+
+      chrome.storage.session.set({
+        activeHost,
+        activeStartTime,
+      });
+    }
+  });
 }
 
 
 //does nativgation between tabs
 function handleNavigation(details) {
   
+  chrome.storage.session.get(["activeHost", "activeStartTime"], (result) => {
+  if (result.activeHost && result.activeStartTime) {
+    const duration = Date.now() - result.activeStartTime;
+    if (duration >= 5000 && duration < 2 * 60 * 60 * 1000) {
+      saveTime(result.activeHost, duration);
+    }
+  }
+})
+
   const url = new URL(details.url);
   const host = url.hostname;
 
@@ -135,6 +164,7 @@ function saveTime(host, duration) {
     const old = result.siteTimes || {};
     const updated = { ...old, [host]: (old[host] || 0) + duration };
     chrome.storage.local.set({ siteTimes: updated });
+    console.log("saved time for you!");
   });
 }
 
