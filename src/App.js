@@ -121,7 +121,7 @@ useEffect(() =>{
               setCheckedTasks(prev => prev.filter(id => id !== d._id))
               }
             }}/>
-          <label class="wishlist" fonthtmlFor={i}>{d.task}</label><br/> <br/> </div>        
+          <b><label class="wishlist" fonthtmlFor={i}>{d.task}</label></b><br/> <br/> </div>        
         ))
   }
 
@@ -155,7 +155,7 @@ useEffect(() =>{
   //render what sites the user has chosen to scroll
   function renderScollSites(){
     if(scrollSites.length == 0){
-      return(<p>Add Distracting Sites</p>)
+      return (<p>Write the domain for sites to add (.com, .net, .org, etc), as well as www. for sites that use it</p>);
     }
     return(
       scrollSites.map((d, i) => 
@@ -254,7 +254,8 @@ useEffect(() =>{
               <input class="wider" type="text" id="siteInput" placeholder="Write site to add or remove" value={siteInput}
               onChange={(e) => 
               /*changes the site input*/ 
-              setSiteInput(e.target.value)}/><br/><br/>
+              setSiteInput(e.target.value)}/> 
+              <br/><br/>
               <button type="button" class="scrollSitesbtn" style={{ marginRight: '12px'}} onClick={(e) => {
                 e.preventDefault();
                 addSiteTracking();

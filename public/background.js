@@ -88,6 +88,13 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
         });
       }
     } else {
+          if(activeHost != null && activeStartTime != null) {
+          const now = Date.now();
+          const duration = now - activeStartTime;
+          if(duration >= 5000 && duration < 2 * 60 * 60 * 1000){
+            saveTime(activeHost, duration);
+          }
+        }
         activeStartTime = null;
         activeHost = null;
         chrome.storage.session.remove(["activeHost", "activeStartTime"]);
@@ -110,6 +117,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       });
     }
   } else {
+    if(activeHost != null && activeStartTime != null) {
+      const now = Date.now();
+      const duration = now - activeStartTime;
+      if(duration >= 5000 && duration < 2 * 60 * 60 * 1000){
+        saveTime(activeHost, duration);
+      }
+    }
       activeStartTime = null;
       activeHost = null;
       chrome.storage.session.remove(["activeHost", "activeStartTime"]);
@@ -169,19 +183,5 @@ chrome.storage.session.get(["activeHost", "activeStartTime"], (result) => {
 chrome.storage.session.get(["lastRedirectTime"], (result) => {
   if (result.lastRedirectTime) {
     lastRedirectTime = new Map(Object.entries(result.lastRedirectTime).map(([k, v]) => [k, Number(v)]));
-  }
-});
-
-chrome.alarms.create("periodicTimeSave", { periodInMinutes: 0.1 }); // every 6 seconds
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "periodicTimeSave") {
-    console.log("[Alarm] Fired");
-    if (activeStartTime && activeHost) {
-      const duration = Date.now() - activeStartTime;
-      console.log(`[Alarm] Saving ${duration}ms for ${activeHost}`);
-      saveTime(activeHost, duration);
-      activeStartTime = Date.now(); // reset timer
-    }
   }
 });
