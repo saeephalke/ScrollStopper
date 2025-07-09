@@ -1,10 +1,9 @@
 let scrollSites = new Set();
 const triggeredTabs = new Set(); //the set of triggered tabs
-const redirectURL = chrome.runtime.getURL("index.html"); //redirct url for when tab changes
 let activeStartTime = null; //timer
 let activeHost = null; //the current host
 const COOLDOWN = 10 * 60 * 1000;
-const lastRedirectTime = new Map();
+let lastRedirectTime = new Map();
 
 
 function setActiveState(host) {
@@ -46,7 +45,6 @@ function initialize() {
       const duration = now - result.activeStartTime;
 
       if(duration >= 5000 && duration < 2 * 60 * 60 * 1000){
-        console.log("saving time");
         saveTime(result.activeHost, duration);
       }
 
@@ -82,7 +80,7 @@ function handleNavigation(details) {
     lastRedirectTime: Object.fromEntries(lastRedirectTime)
   });
 
-  chrome.tabs.create({ url: redirectURL });
+  redirectIndexHTML();
   activeStartTime = now;
   activeHost = host;
 
@@ -91,6 +89,18 @@ function handleNavigation(details) {
     activeStartTime,
   });
 
+}
+
+function redirectIndexHTML(){
+  const index = chrome.runtime.getURL("index.html");
+  chrome.tabs.query({}, function(tabs) {
+    const existing = tabs.find(tab => tab.url && tab.url.startsWith(index));
+    if(existing){
+      chrome.tabs.update(existing.id, { active: true });
+    } else {
+      chrome.tabs.create({ url: index });
+    }
+  })
 }
 
 
@@ -139,7 +149,6 @@ function saveTime(host, duration) {
     const old = result.siteTimes || {};
     const updated = { ...old, [host]: (old[host] || 0) + duration };
     chrome.storage.local.set({ siteTimes: updated });
-    console.log("saved time for you!");
   });
 }
 
@@ -194,7 +203,6 @@ chrome.storage.session.get(["activeHost", "activeStartTime"], (result) => {
   if (result.activeHost && result.activeStartTime) {
     activeHost = result.activeHost;
     activeStartTime = result.activeStartTime;
-    console.log(`[Restore] Resumed tracking ${activeHost} from ${new Date(activeStartTime)}`);
   }
 });
 
