@@ -4,6 +4,7 @@ let activeStartTime = null; //timer
 let activeHost = null; //the current host
 const COOLDOWN = 10 * 60 * 1000;
 let lastRedirectTime = new Map();
+let active = false;
 
 
 function setActiveState(host) {
@@ -40,7 +41,7 @@ function initialize() {
   });
 
   chrome.storage.session.get(["activeHost", "activeStartTime"], (result) =>{
-    if(result.activeHost & result.ArrayactiveStartTime){
+    if(result.activeHost && result.activeStartTime){
       const now = Date.now();
       const duration = now - result.activeStartTime;
 
@@ -177,6 +178,10 @@ function saveAndClearActiveTime() {
     chrome.storage.session.remove(["activeHost", "activeStartTime"]);
   }
 }
+
+chrome.runtime.onSuspend.addListener(function() {
+  saveAndClearActiveTime();
+});
 
 // Listen for changes to scrollSites and update
 chrome.storage.onChanged.addListener((changes, area) => {
